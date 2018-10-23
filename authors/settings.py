@@ -26,7 +26,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'ah-map-api.herokuapp.com',
-    'ah-map.herokuapp.com',
 ]
 
 # Application definition
