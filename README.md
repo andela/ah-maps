@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/andela/ah-maps.svg?branch=ch-add-travis-yml-161255231)](https://travis-ci.org/andela/ah-maps)
+[![Build Status](https://travis-ci.org/andela/ah-maps.svg?branch=develop)](https://travis-ci.org/andela/ah-maps)
 
 Authors Haven - A Social platform for the creative at heart.
 =======
