@@ -1,6 +1,6 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
-[![Coverage Status](https://coveralls.io/repos/github/andela/ah-maps/badge.svg?branch=master)](https://coveralls.io/github/andela/ah-maps?branch=master)[![Build Status](https://travis-ci.org/andela/ah-maps.svg?branch=master)](https://travis-ci.org/andela/ah-maps)
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-maps/badge.svg?branch=master)](https://coveralls.io/github/andela/ah-maps?branch=develop) [![Build Status](https://travis-ci.org/andela/ah-maps.svg?branch=develop)](https://travis-ci.org/andela/ah-maps)
 
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
