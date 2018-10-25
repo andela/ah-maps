@@ -1,6 +1,6 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
-
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-maps/badge.svg?branch=master)](https://coveralls.io/github/andela/ah-maps?branch=master)
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.
@@ -390,7 +390,3 @@ No additional parameters required
 ### Get Tags
 
 `GET /api/tags`
-
-
-
-
