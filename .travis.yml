@@ -3,9 +3,6 @@ language: python
 python:
   - "3.6"
 
-env:
-  global:
-    - CC_TEST_REPORTER_ID=$CC_TEST_ID
 
 service:
   - postgresql
@@ -20,15 +17,11 @@ before_script:
   - psql -c 'create database ah_maps;' -U postgres
   - python manage.py makemigrations
   - python manage.py migrate
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
 
 script:
   - coverage run --source='.' ./manage.py test
   - coverage report
-  - bundle exec rspec
+
 
 after_script:
   - coveralls
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
