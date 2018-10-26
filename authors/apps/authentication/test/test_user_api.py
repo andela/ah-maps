@@ -7,12 +7,10 @@ from authors.apps.factories import UserFactory
 #This creates an instance of the factory used to make mock data
 faker = Factory.create()
 
-
 class UserTest(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
 
         self.namespace = 'authentication'
         self.body = {
