@@ -15,46 +15,23 @@ class UserTest(TestCase):
         self.namespace = 'authentication'
         self.body = {
             "user": {
-            'username': faker.first_name(),
-            'email': faker.email(),
-            'password': faker.password()
+                'username': faker.first_name(),
+                'email': faker.email(),
+                'password': faker.password()
             }
-        }
-        self.no_username= {
-            "user": {
-            'username': '',
-            'email': faker.email(),
-            'password': faker.password()
-            } 
-        }
-        self.no_email= {
-            "user": {
-            'username': faker.first_name(),
-            'email': '',
-            'password': faker.password()
-            } 
         }
         self.not_exist= {
              "user": {
-            'username': faker.first_name(),
-            'email': faker.email(),
-            'password': faker.password()
+                'username': faker.first_name(),
+                'email': faker.email(),
+                'password': faker.password()
             } 
         }
-        self.email_format= {
-            "user": {
-            'username': faker.first_name(),
-            'email': 'emailformat',
-            'password': faker.password()
-            } 
-        }
-        self.password_length= {
-             "user": {
-            'username': faker.first_name(),
-            'email': faker.email(),
-            'password': 'pass'
-            } 
-        }
+        self.no_username= self.body.update({'username':''})
+        self.no_email= self.body.update({'email':''})
+        self.email_format= self.body.update({'email':'emailformat'})
+        self.password_length= self.body.update({'password':'pass'})
+        
         self.create_url = reverse(self.namespace + ':register')
         self.login_url = reverse(self.namespace + ':login')
        
