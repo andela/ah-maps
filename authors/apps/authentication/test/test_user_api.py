@@ -43,7 +43,20 @@ class UserTest(TestCase):
             'password': faker.password()
             } 
         }
-        
+        self.email_format= {
+            "user": {
+            'username': faker.first_name(),
+            'email': 'emailformat',
+            'password': faker.password()
+            } 
+        }
+        self.password_length= {
+             "user": {
+            'username': faker.first_name(),
+            'email': faker.email(),
+            'password': 'pass'
+            } 
+        }
         self.create_url = reverse(self.namespace + ':register')
         self.login_url = reverse(self.namespace + ':login')
        
@@ -53,18 +66,22 @@ class UserTest(TestCase):
         response2 = self.client.post(self.create_url, self.body, format='json')
         response3 = self.client.post(self.create_url, self.no_username, format='json')
         response4 = self.client.post(self.create_url, self.no_email, format='json')
+        response5 = self.client.post(self.create_url, self.email_format, format='json')
+        response6 = self.client.post(self.create_url, self.password_length, format='json')
 
         self.assertEqual(201, response.status_code)
         self.assertEqual(400, response2.status_code)
         self.assertEqual(400, response3.status_code)
         self.assertEqual(400, response4.status_code)
+        self.assertEqual(400, response5.status_code)
+        self.assertEqual(400, response6.status_code)
 
     def test_user_login(self):
         self.client.post(self.create_url, self.body, format='json')
         response = self.client.post(self.login_url, self.body, format='json')
         response2 = self.client.post(self.login_url, self.no_email, format='json')
         response3 = self.client.post(self.login_url, self.no_username, format='json')
-        response4 = self.client.post(self.login_url, self.not_exist, format='json')
+        response4 = self.client.post(self.login_url, self.not_exist, format='json') 
 
         self.assertEqual(200, response.status_code)
         self.assertEqual(400, response2.status_code)
