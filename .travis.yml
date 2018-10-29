@@ -3,6 +3,7 @@ language: python
 python:
   - "3.6"
 
+
 service:
   - postgresql
 
@@ -18,8 +19,9 @@ before_script:
   - python manage.py migrate
 
 script:
-  - coverage run --source='.' ./manage.py test 
+  - coverage run --source='.' ./manage.py test
   - coverage report
+
 
 after_script:
   - coveralls
