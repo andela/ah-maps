@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/profile/', include(('authors.apps.profile.api.urls', 'profile_api'), namespace='profile_api')),
     path('admin/', admin.site.urls),
     path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),
+    path('oauth/', include('social_django.urls',  namespace='social')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

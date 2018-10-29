@@ -3,9 +3,11 @@ language: python
 python:
   - "3.6"
 
-
-service:
+services:
   - postgresql
+
+addons:
+  postgresql: '9.4'
 
 install:
   - pip3 install -r requirements.txt
