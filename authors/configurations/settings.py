@@ -44,12 +44,13 @@ EXTERNAL_APPS = (
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'versatileimagefield',
 )
 
 LOCAL_APPS = (
     'authors.apps.authentication',
     'authors.apps.core',
-    'authors.apps.profiles',
+    'authors.apps.profile',
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS
@@ -137,7 +138,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:4000',
@@ -156,8 +161,18 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
+
+VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
+    'person_headshot': [
+        ('full_size', 'url'),
+        ('thumbnail', 'thumbnail__100x100'),
+        ('medium_square_crop', 'crop__400x400'),
+        ('small_square_crop', 'crop__50x50')
+    ]
+}
