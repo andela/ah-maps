@@ -1,8 +1,10 @@
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from .models import User
+
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -16,11 +18,33 @@ class RegistrationSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
+    # Ensure username is unique
+    username = serializers.CharField(
+        validators = [
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Sorry, this username has already been taken"
+                )
+        ]
+
+    )
+
+    # Ensure email is unique
+    email = serializers.CharField(
+        validators = [
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Sorry, this email has already been taken"
+                )
+        ]
+
+    )
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
     class Meta:
         model = User
+
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password']
