@@ -117,4 +117,22 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         return self.username
 
+    @property
+    def token(self):
+        """
+        Generates the token and allows the token to be claaed by `user.token`
+        : return string
+        """
+        token = jwt.encode(
+            {
+                "id": self.pk,
+                "username": self.get_full_name,
+                "email": self.email,
+                "iat": datetime.utcnow(),
+                "exp": datetime.utcnow() + timedelta(minutes=5)
+            },
+            settings.SECRET_KEY, algorithm='HS256').decode()
+        return token
+
+
 
