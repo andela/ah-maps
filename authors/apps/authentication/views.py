@@ -21,21 +21,6 @@ class RegistrationAPIView(APIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-        password = user.get("password")
-        email = user.get("email")
-        
-        if not password:
-            raise ValidationError({"password": "Oops, you didn't enter a password"})
-
-        #ensure password is alphanumeric
-        if not re.match("^(?=.*\d).{8,20}$", password):
-           raise ValidationError({"password" : "Password must be between 8 - 20 characters and at least 1 digit"})
-
-        #ensure email is valid
-        if not re.match("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-            raise ValidationError({"email" : "Please enter a valid email address"})
-
-
 
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and

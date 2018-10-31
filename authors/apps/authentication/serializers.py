@@ -12,32 +12,53 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # Ensure passwords are at least 8 characters long, no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.CharField(
+    password = serializers.RegexField(
+        regex="^(?=.*\d).{8,20}$",
         max_length=128,
         min_length=8,
-        write_only=True
+        write_only=True,
+        required=True,
+        error_messages={
+            'required': 'Sorry, password is required.',
+            'invalid': 'Sorry, passwords must contain a letter and a number.',
+            'min_length': 'Sorry, passwords must contain at least 8 characters.',
+            'max_length': 'Sorry, passwords cannot contain more than 128 characters.'
+        }
     )
 
     # Ensure username is unique
-    username = serializers.CharField(
+    username = serializers.RegexField(
+        regex="^(?!.*\ )[A-Za-z\d\-\_][^\W_]+$",
+        min_length=3,
+        required=True,
         validators = [
             UniqueValidator(
                 queryset=User.objects.all(),
-                message="Sorry, this username has already been taken"
+                message="Sorry, this username is already in use."
                 )
-        ]
+        ],
+        error_messages={
+            'invalid': 'Sorry, invalid password. No spaces or special characters allowed.',
+            'required': 'Sorry, username is required.',
+            'min_length': 'Sorry, username must have at least 3 characters.'
+        }
 
     )
 
     # Ensure email is unique
-    email = serializers.CharField(
-        validators = [
+    email = serializers.RegexField(
+        regex="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+        required=True,
+        validators=[
             UniqueValidator(
                 queryset=User.objects.all(),
-                message="Sorry, this email has already been taken"
-                )
-        ]
-
+                message='Sorry, this email is already in use.',
+            )
+        ],
+        error_messages={
+            'required': 'Sorry, an email address is required.',
+            'invalid': 'Sorry, please enter a valid email address.'
+        }
     )
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
