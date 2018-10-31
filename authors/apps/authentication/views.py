@@ -6,45 +6,30 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from .backends import JWTAuthentication
 
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
 
+auth = JWTAuthentication()
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = RegistrationSerializer 
+    serializer_class = RegistrationSerializer
 
     def post(self, request):
         user = request.data.get('user', {})
-        password = user.get("password")
-        email = user.get("email")
-        
-        if not password:
-            raise ValidationError({"password": "Oops, you didn't enter a password"})
-
-        #ensure password is alphanumeric
-        if not re.match("^(?=.*\d).{8,20}$", password):
-           raise ValidationError({"password" : "Password must be between 8 - 20 characters and at least 1 digit"})
-
-        #ensure email is valid
-        if not re.match("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-            raise ValidationError({"email" : "Please enter a valid email address"})
-
-
-
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user)
+        serializer = self.serializer_class(data=user, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        success_message = {"success" : "You have registered successfully"}
+        success_message = {"success" : "Please check your email for a link to complete your registration"}
 
         return Response(success_message, status=status.HTTP_201_CREATED)
 
@@ -93,3 +78,20 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ActivateAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+
+    def post(self, request, token):
+        token = request.data.get('token')
+        print(token)
+        user = auth.authenticate_credentials(request, token)
+        if user.is_activated:
+            message = {"message": "Your account has already been activated."}
+            return Response(message, status=status.HTTP_200_OK)
+        user.is_activated = True
+        user.save()
+        message = {"message": "Your account has been activated successfully"}
+        return Response(message, status=status.HTTP_200_OK)
