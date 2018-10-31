@@ -64,4 +64,4 @@ def create_profile(sender, **kwargs):
         Profile.objects.create(user=kwargs['instance'])
 
 
-post_save.connect(create_profile, sender=get_user_model())
+create_profile_signal = post_save.connect(create_profile, sender=get_user_model())
