@@ -8,7 +8,6 @@ from .models import User
 from django.conf import settings
 
 
-
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
@@ -45,6 +44,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'min_length': 'Sorry, username must have at least 3 characters.'
         }
 
+    )
+
+    # Ensure email is unique
+    email = serializers.RegexField(
+        regex="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+        required=True,
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message='Sorry, this email is already in use.',
+            )
+        ],
+        error_messages={
+            'required': 'Sorry, an email address is required.',
+            'invalid': 'Sorry, please enter a valid email address.'
+        }
     )
     token = serializers.CharField(
         read_only = True
@@ -200,6 +215,23 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+
+    def get_user(self, email=None, username=None, id=None):
+        try:
+            if email:
+                user = User.objects.get(email=email)
+            elif username:
+                user = User.objects.get(username=username)
+            else:
+                user = User.objects.get(id=id)
+            return user
+        except User.DoesNotExist:
+            raise serializers.ValidationError('User does not exist')
+
+
+    def reset_password(self, email, token, request):
+        User.objects.reset_password_email(email, token, request)
+        return True
 
 class SocialSignUpSerializer(serializers.Serializer):
     """Serializer for socisl signup data
