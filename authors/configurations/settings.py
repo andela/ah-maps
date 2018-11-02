@@ -21,9 +21,17 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '7pgozr2jn7zs_o%i8id6=rddie!*0f0qy3$oy$(8231i^4*@u3'
-
+SENDGRID_KEY = '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'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+COMPANY_EMAIL = 'mapandela@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mapandela@gmail.com'
+EMAIL_HOST_PASSWORD = 'Andela@31'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 ALLOWED_HOSTS = [
     'ah-map-staging.herokuapp.com',
@@ -205,6 +213,7 @@ SOCIAL_AUTH_PIPELINE = (
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
 
+
 VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     'person_headshot': [
         ('full_size', 'url'),
@@ -213,3 +222,4 @@ VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
         ('small_square_crop', 'crop__50x50')
     ]
 }
+

@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from .backends import JWTAuthentication
 
 from social_django.utils import load_backend, load_strategy
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
@@ -16,12 +17,13 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,SocialSignUpSerializer
 )
 
+auth = JWTAuthentication()
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = RegistrationSerializer 
+    serializer_class = RegistrationSerializer
 
     def post(self, request):
         user = request.data.get('user', {})
@@ -29,11 +31,10 @@ class RegistrationAPIView(APIView):
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user)
+        serializer = self.serializer_class(data=user, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        success_message = {"success" : "You have registered successfully"}
+        success_message = {"success" : "Please check your email for a link to complete your registration"}
 
         return Response(success_message, status=status.HTTP_201_CREATED)
 
@@ -82,6 +83,22 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+class ActivateAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+
+    def get(self, request, token):
+        user = auth.authenticate_credentials(request, token)
+        if user.is_activated:
+            message = {"message": "Your account has already been activated."}
+            return Response(message, status=status.HTTP_200_OK)
+        user.is_activated = True
+        user.save()
+        message = {"message": "Your account has been activated successfully"}
+        return Response(message, status=status.HTTP_200_OK)
 
 class SocialSignUp(CreateAPIView):
     permission_classes = (AllowAny,)
@@ -152,3 +169,4 @@ class SocialSignUp(CreateAPIView):
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
+
