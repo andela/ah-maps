@@ -44,7 +44,7 @@ class UserManager(BaseUserManager):
         current_site = get_current_site(request)
         activate_url = protocol + current_site.domain + reverse('authentication:activate', kwargs={'token': token})
         message = "Please click <a href='" + activate_url + "'>this</a> link to activate your account. If the link doesn't work copy this to your browser:" + activate_url
-        send_mail("Activate Authors'Haven Account", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
+        send_mail("Activate Authors'Haven Account", message, settings.COMPANY_EMAIL, [email], fail_silently=True,  html_message=message)
         return True
 
     def reset_password_email(self, email, token, request):
@@ -52,7 +52,7 @@ class UserManager(BaseUserManager):
         current_site = get_current_site(request)
         reset_url = protocol + current_site.domain + reverse('authentication:updateuser', kwargs={'token': token})
         message = "Please click  <a href='" + reset_url + "'>this</a> link to reset your password. If the link doesn't work copy this to your browser:" + reset_url
-        send_mail("Reset Authors'Haven Password", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
+        send_mail("Reset Authors'Haven Password", message, settings.COMPANY_EMAIL, [email], fail_silently=True,  html_message=message)
         return True
 
     def create_superuser(self, username, email, password):
@@ -68,7 +68,7 @@ class UserManager(BaseUserManager):
       user = self.create_user(username, email, password)
       user.is_superuser = True
       user.is_staff = True
-      user.is_actived = False
+      user.is_activated = False
       user.save()
 
       return user
@@ -96,8 +96,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_activated = models.BooleanField(default=False)
 
-
-    is_activated = models.BooleanField(default=False)
     # The `is_staff` flag is expected by Django to determine who can and cannot
     # log into the Django admin site. For most users, this flag will always be
     # falsed.
@@ -145,42 +143,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
-        
-
-    @property
-    def token(self):
-        """
-        Generates the token and allows the token to be claaed by `user.token`
-        : return string
-        """
-        token = jwt.encode(
-            {
-                "id": self.pk,
-                "username": self.get_full_name,
-                "email": self.email,
-                "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(minutes=60)
-            },
-            settings.SECRET_KEY, algorithm='HS256').decode()
-        return token
-
-    @property
-    def token(self):
-        """
-        Generates the token and allows the token to be claaed by `user.token`
-        : return string
-        """
-        token = jwt.encode(
-            {
-                "id": self.pk,
-                "username": self.get_full_name,
-                "email": self.email,
-                "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(minutes=5)
-            },
-            settings.SECRET_KEY, algorithm='HS256').decode()
-        return token
-
 
 
     @property

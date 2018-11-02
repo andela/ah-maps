@@ -10,7 +10,7 @@ from .models import User
 class JWTAuthentication(authentication.BaseAuthentication):
 
 
-    keyword = "Token"
+    keyword = "token"
 
 
     def authenticate(self, request):
@@ -59,5 +59,3 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
     def authenticate_header(self, request):
         return self.keyword
-        
-

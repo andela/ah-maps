@@ -150,7 +150,7 @@ class LoginSerializer(serializers.Serializer):
 
         if not user.is_activated:
             raise serializers.ValidationError(
-                'Please confirm email to continue.'
+                'Please check your email for a link to complete your registration'
             )
 
         # The `validate` method should return a dictionary of validated data.

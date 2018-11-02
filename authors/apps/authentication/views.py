@@ -132,7 +132,7 @@ class UpdateUserAPIView(APIView):
             message = {"message": "Please provide a password"}
             return Response(message, status=status.HTTP_200_OK)
         if check_password(password, user.password):
-            message = {"message": "Your new password can't be the same as the old password"}
+            message = {"message": "Your new password can't be the same as your old password"}
             return Response(message, status=status.HTTP_200_OK)
         user.set_password(password)
         user.save()
@@ -149,7 +149,7 @@ class SocialSignUp(CreateAPIView):
         """ Function to interrupt social_auth authentication pipeline"""
         #pass the request to serializer to make it a python object
         #serializer also catches errors of blank request objects
-        serializer = self.serializer_class(data=request.data) 
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         provider = serializer.data.get('provider', None)
@@ -159,18 +159,18 @@ class SocialSignUp(CreateAPIView):
             user=None
         else:
             user=request.user
-    
+
 
         try:
             #load backend with strategy and provider from settings(AUTHENTICATION_BACKENDS)
             backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
-        
+
         except MissingBackend as error:
-            
+
             return Response({
                 "errors": str(error)
             }, status=status.HTTP_400_BAD_REQUEST)
-            
+
         try:
             #check type of oauth provide e.g facebook is BaseOAuth2 twitter is BaseOAuth1
             if isinstance(backend, BaseOAuth1):
@@ -198,15 +198,14 @@ class SocialSignUp(CreateAPIView):
 
         if authenticated_user and authenticated_user.is_active:
             #Check if the user you intend to authenticate is active
-            
+
             headers = self.get_success_headers(serializer.data)
             response = {"email":authenticated_user.email,
                         "username":authenticated_user.username,
-                        "token":authenticated_user.token} 
-                       
+                        "token":authenticated_user.token}
+
             return Response(response,status=status.HTTP_201_CREATED,
                                 headers=headers)
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
-
