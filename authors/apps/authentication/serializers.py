@@ -9,6 +9,7 @@ from django.conf import settings
 
 
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
@@ -62,12 +63,31 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'invalid': 'Sorry, please enter a valid email address.'
         }
     )
+    token = serializers.CharField(
+        read_only = True
+    )
 
+    # Ensure email is unique
+    email = serializers.RegexField(
+        regex="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+        required=True,
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message='Sorry, this email is already in use.',
+            )
+        ],
+        error_messages={
+            'required': 'Sorry, an email address is required.',
+            'invalid': 'Sorry, please enter a valid email address.'
+        }
+    )
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
     class Meta:
         model = User
+
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password', 'token']
@@ -157,7 +177,6 @@ class UserSerializer(serializers.ModelSerializer):
         min_length=8,
         write_only=True
     )
-
     class Meta:
         model = User
         fields = ('email', 'username', 'password')
@@ -215,3 +234,10 @@ class UserSerializer(serializers.ModelSerializer):
     def reset_password(self, email, token, request):
         User.objects.reset_password_email(email, token, request)
         return True
+
+class SocialSignUpSerializer(serializers.Serializer):
+    """Serializer for socisl signup data
+    """
+    provider = serializers.CharField(max_length=20, required=True)
+    access_token = serializers.CharField(max_length=300, required=True)
+    access_token_secret = serializers.CharField(max_length=300, allow_null=True, default=None)

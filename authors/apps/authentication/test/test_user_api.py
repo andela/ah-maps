@@ -39,10 +39,12 @@ class UserTest(TestCase):
         self.no_email= self.body.update({'email':''})
         self.email_format= self.body.update({'email':'emailformat'})
         self.password_length= self.body.update({'password':'pass'})
+        self.token = 'token'
 
         self.create_url = reverse(self.namespace + ':register')
         self.login_url = reverse(self.namespace + ':login')
-
+        self.activate_url = reverse(self.namespace + ':activate', kwargs={'token': self.token})
+        self.reset_url = reverse(self.namespace + ':resetpassword')
 
     def test_create_user_api(self):
 
@@ -70,3 +72,18 @@ class UserTest(TestCase):
         self.assertEqual(400, response2.status_code)
         self.assertEqual(400, response3.status_code)
         self.assertEqual(400, response4.status_code)
+
+    def test_activate_user(self):
+        register = self.client.post(self.create_url, self.user_body, format='json')
+        user = get_user_model().objects.get(email=self.user_body.get('user').get('email'))
+        self.token = user.token
+        self.activate_url = reverse(self.namespace + ':activate', kwargs={'token': self.token})
+        activate = self.client.get(self.activate_url)
+        self.assertEqual(activate.json().get('user').get('message'), 'Your account has already been activated.')
+        self.assertEqual(activate.status_code, 200)
+
+    def test_reset_password(self):
+        register = self.client.post(self.create_url, self.user_body, format='json')
+        activate = self.client.post(self.reset_url, data={"email":self.user_body.get('user').get('email')}, head={"Content-Type":"application/json"})
+        self.assertEqual(activate.json().get('user').get('message'), 'An email has been sent to your account')
+        self.assertEqual(activate.status_code, 200)

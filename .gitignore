@@ -94,11 +94,14 @@ ENV/
 db.sqlite3
 
 # Ignore migrations
-*/migrations/*
-!*/migrations/__init__.py
+authors/apps/*/migrations/*
+!authors/apps/*/migrations/__init__.py
 
 #vscode ide
 .vscode
 
 # Vim n co
 *.swp
+
+# Ignore images
+authors/media/*

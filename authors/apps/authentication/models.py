@@ -12,6 +12,7 @@ from django.db import models
 from rest_framework.response import Response
 from django.urls import reverse
 
+
 class UserManager(BaseUserManager):
 
     """
@@ -144,6 +145,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+        
+
+    @property
+    def token(self):
+        """
+        Generates the token and allows the token to be claaed by `user.token`
+        : return string
+        """
+        token = jwt.encode(
+            {
+                "id": self.pk,
+                "username": self.get_full_name,
+                "email": self.email,
+                "iat": datetime.utcnow(),
+                "exp": datetime.utcnow() + timedelta(minutes=60)
+            },
+            settings.SECRET_KEY, algorithm='HS256').decode()
+        return token
 
 
     @property
