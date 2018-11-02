@@ -15,9 +15,11 @@ class JWTAuthentication(authentication.BaseAuthentication):
         """
         This checks that the passed JWt token is valid and returns a user and his/her token on successful verification.
         """
+
         request.user = None
 
         # returns Authorization header as a bytestring
+
 
         auth_header = authentication.get_authorization_header(request).split()
 
@@ -57,3 +59,4 @@ class JWTAuthentication(authentication.BaseAuthentication):
     def authenticate_header(self, request):
         return self.keyword
         
+
