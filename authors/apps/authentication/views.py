@@ -1,8 +1,11 @@
+import re
+
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 
 from social_django.utils import load_backend, load_strategy
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
@@ -18,7 +21,7 @@ class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = RegistrationSerializer
+    serializer_class = RegistrationSerializer 
 
     def post(self, request):
         user = request.data.get('user', {})
@@ -30,7 +33,9 @@ class RegistrationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        success_message = {"success" : "You have registered successfully"}
+
+        return Response(success_message, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
