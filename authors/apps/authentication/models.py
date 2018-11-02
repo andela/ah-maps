@@ -11,6 +11,8 @@ from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 from rest_framework.response import Response
+from django.urls import reverse
+
 
 class UserManager(BaseUserManager):
 
@@ -43,6 +45,14 @@ class UserManager(BaseUserManager):
         activate_url = protocol + current_site.domain + reverse('authentication:activate', kwargs={'token': token})
         message = "Please click <a href='" + activate_url + "'>this</a> link to activate your account. If the link doesn't work copy this to your browser:" + activate_url
         send_mail("Activate Authors'Haven Account", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
+        return True
+
+    def reset_password_email(self, email, token, request):
+        protocol = 'https://' if request.is_secure() else 'http://'
+        current_site = get_current_site(request)
+        reset_url = protocol + current_site.domain + reverse('authentication:updateuser', kwargs={'token': token})
+        message = "Please click  <a href='" + reset_url + "'>this</a> link to reset your password. If the link doesn't work copy this to your browser:" + reset_url
+        send_mail("Reset Authors'Haven Password", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
         return True
 
     def create_superuser(self, username, email, password):
@@ -84,6 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # letting them delete it. That way they won't show up on the site anymore,
     # but we can still analyze the data.
     is_active = models.BooleanField(default=True)
+    is_activated = models.BooleanField(default=False)
 
 
     is_activated = models.BooleanField(default=False)
