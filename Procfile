@@ -1,2 +1,2 @@
 release: ./release.sh
-web: gunicorn authors.configurations.wsgi 
+web: gunicorn authors.configurations.wsgi
