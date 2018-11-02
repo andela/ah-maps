@@ -90,9 +90,7 @@ class ActivateAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
-    def post(self, request, token):
-        token = request.data.get('token')
-        print(token)
+    def get(self, request, token):
         user = auth.authenticate_credentials(request, token)
         if user.is_activated:
             message = {"message": "Your account has already been activated."}
