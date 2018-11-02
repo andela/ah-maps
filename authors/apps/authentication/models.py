@@ -6,13 +6,18 @@ from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.db import models
+from django.urls import reverse
+from rest_framework.response import Response
 
 class UserManager(BaseUserManager):
+
     """
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
-    Django to create a `User` for free. 
+    Django to create a `User` for free.
 
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
@@ -32,6 +37,14 @@ class UserManager(BaseUserManager):
 
         return user
 
+    def send_confirmation_email(self, email, token, request):
+        protocol = 'https://' if request.is_secure() else 'http://'
+        current_site = get_current_site(request)
+        activate_url = protocol + current_site.domain + reverse('authentication:activate', kwargs={'token': token})
+        message = "Please click <a href='" + activate_url + "'>this</a> link to activate your account. If the link doesn't work copy this to your browser:" + activate_url
+        send_mail("Activate Authors'Haven Account", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
+        return True
+
     def create_superuser(self, username, email, password):
       """
       Create and return a `User` with superuser powers.
@@ -45,9 +58,11 @@ class UserManager(BaseUserManager):
       user = self.create_user(username, email, password)
       user.is_superuser = True
       user.is_staff = True
+      user.is_actived = False
       user.save()
 
       return user
+
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -70,6 +85,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     # but we can still analyze the data.
     is_active = models.BooleanField(default=True)
 
+
+    is_activated = models.BooleanField(default=False)
     # The `is_staff` flag is expected by Django to determine who can and cannot
     # log into the Django admin site. For most users, this flag will always be
     # falsed.
@@ -99,6 +116,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         This string is used when a `User` is printed in the console.
         """
         return self.email
+
 
     @property
     def get_full_name(self):
@@ -154,3 +172,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 
+    @property
+    def token(self):
+        """
+        Generates the token and allows the token to be claaed by `user.token`
+        : return string
+        """
+        token = jwt.encode(
+            {
+                "id": self.pk,
+                "username": self.get_full_name,
+                "email": self.email,
+                "iat": datetime.utcnow(),
+                "exp": datetime.utcnow() + timedelta(minutes=60)
+            },
+            settings.SECRET_KEY, algorithm='HS256').decode()
+        return token
