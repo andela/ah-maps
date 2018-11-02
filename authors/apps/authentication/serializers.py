@@ -107,7 +107,6 @@ class UserSerializer(serializers.ModelSerializer):
         min_length=8,
         write_only=True
     )
-
     class Meta:
         model = User
         fields = ('email', 'username', 'password')
@@ -147,3 +146,11 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class SocialSignUpSerializer(serializers.Serializer):
+    """Serializer for socisl signup data
+    """
+    provider = serializers.CharField(max_length=20, required=True)
+    access_token = serializers.CharField(max_length=300, required=True)
+    access_token_secret = serializers.CharField(max_length=300, allow_null=True, default=None)
