@@ -9,6 +9,6 @@ class UserFactory(factory.DjangoModelFactory):
     class Meta:
         model = get_user_model()
 
-    username = faker.first_name()
-    email = faker.email()
-    password = faker.password()
+    username = factory.Sequence(lambda n: 'map%d' % n)
+    email = factory.Sequence(lambda n: 'example_%s@map.com' % n)
+    password = factory.PostGenerationMethodCall('set_password', faker.password())

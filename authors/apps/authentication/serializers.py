@@ -44,6 +44,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     )
+    token = serializers.CharField(
+        read_only = True
+    )
 
     # Ensure email is unique
     email = serializers.RegexField(
@@ -68,7 +71,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = ['email', 'username', 'password']
+        fields = ['email', 'username', 'password', 'token']
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
@@ -79,6 +82,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
+    token = serializers.CharField(read_only=True)
 
 
     def validate(self, data):
@@ -132,7 +136,7 @@ class LoginSerializer(serializers.Serializer):
         return {
             'email': user.email,
             'username': user.username,
-
+            'token' : user.token
         }
 
 
@@ -148,7 +152,6 @@ class UserSerializer(serializers.ModelSerializer):
         min_length=8,
         write_only=True
     )
-
     class Meta:
         model = User
         fields = ('email', 'username', 'password')
@@ -188,3 +191,11 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class SocialSignUpSerializer(serializers.Serializer):
+    """Serializer for socisl signup data
+    """
+    provider = serializers.CharField(max_length=20, required=True)
+    access_token = serializers.CharField(max_length=300, required=True)
+    access_token_secret = serializers.CharField(max_length=300, allow_null=True, default=None)
