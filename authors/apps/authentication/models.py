@@ -9,6 +9,7 @@ from django.contrib.auth.models import (
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import models
+from django.urls import reverse
 from rest_framework.response import Response
 from django.urls import reverse
 
@@ -38,7 +39,6 @@ class UserManager(BaseUserManager):
 
         return user
 
-
     def send_confirmation_email(self, email, token, request):
         protocol = 'https://' if request.is_secure() else 'http://'
         current_site = get_current_site(request)
@@ -54,7 +54,6 @@ class UserManager(BaseUserManager):
         message = "Please click  <a href='" + reset_url + "'>this</a> link to reset your password. If the link doesn't work copy this to your browser:" + reset_url
         send_mail("Reset Authors'Haven Password", message, settings.COMPANY_EMAIL, [email], fail_silently=False,  html_message=message)
         return True
-
 
     def create_superuser(self, username, email, password):
       """

@@ -51,5 +51,5 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed('No user found!')
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User has been deactivated')
-
         return user
+

@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from .backends import JWTAuthentication
 
-
 from social_django.utils import load_backend, load_strategy
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
 from social_core.exceptions import MissingBackend
@@ -27,21 +26,17 @@ class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-    serializer_class = RegistrationSerializer 
+    serializer_class = RegistrationSerializer
 
     def post(self, request):
         user = request.data.get('user', {})
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user, context={"request":request})
+        serializer = self.serializer_class(data=user, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        success_message = {"success" : "please confirm your email to continue"}
-
-
-        success_message = {"success" : "You have registered successfully"}
-
+        success_message = {"success" : "Please check your email for a link to complete your registration"}
         return Response(success_message, status=status.HTTP_201_CREATED)
 
 
@@ -88,7 +83,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class ActivateAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -144,6 +138,7 @@ class UpdateUserAPIView(APIView):
         user.save()
         message = {"message": "Your password has been updated successfully"}
         return Response(message, status=status.HTTP_200_OK)
+
 
 class SocialSignUp(CreateAPIView):
     permission_classes = (AllowAny,)
@@ -214,3 +209,4 @@ class SocialSignUp(CreateAPIView):
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
+

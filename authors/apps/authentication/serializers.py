@@ -8,8 +8,6 @@ from .models import User
 from django.conf import settings
 
 
-
-
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
@@ -82,12 +80,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'invalid': 'Sorry, please enter a valid email address.'
         }
     )
+
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
     class Meta:
         model = User
-
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password', 'token']
