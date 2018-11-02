@@ -84,6 +84,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # letting them delete it. That way they won't show up on the site anymore,
     # but we can still analyze the data.
     is_active = models.BooleanField(default=True)
+    is_activated = models.BooleanField(default=False)
 
 
     is_activated = models.BooleanField(default=False)
