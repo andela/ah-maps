@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
-
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
-    path('', include(('authors.apps.profiles.urls', 'profile'), namespace='profile')),
+    path('', include(('authors.apps.profile.urls', 'profile'), namespace='profile')),
+    path('api/profile/', include(('authors.apps.profile.api.urls', 'profile_api'), namespace='profile_api')),
     path('admin/', admin.site.urls),
     path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),
-]
+    path('oauth/', include('social_django.urls',  namespace='social')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

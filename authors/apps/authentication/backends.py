@@ -8,6 +8,7 @@ from .models import User
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
+    keyword = 'Token'
 
     def authenticate(self, request):
         """
@@ -52,4 +53,5 @@ class JWTAuthentication(authentication.BaseAuthentication):
         if not user.is_active:
             raise exceptions.AuthorizationFailed('User has been deactivated')
 
-        return user
+        return user, token
+
