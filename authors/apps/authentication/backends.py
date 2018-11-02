@@ -9,6 +9,10 @@ from .models import User
 
 class JWTAuthentication(authentication.BaseAuthentication):
 
+
+    keyword = "Token"
+
+
     def authenticate(self, request):
         """
         This checks that the passed JWt token is valid and returns a user and his/her token on successful verification.
@@ -52,4 +56,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User has been deactivated')
         return user
+
+    def authenticate_header(self, request):
+        return self.keyword
+        
 
