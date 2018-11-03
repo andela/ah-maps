@@ -10,10 +10,13 @@ from django.contrib.auth import get_user_model
 # This creates an instance of the factory used to make mock data
 faker = Factory.create()
 
+
 class UserTest(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client = APIClient()
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user.token)
 
         self.namespace = 'authentication'
         self.body = {
@@ -49,7 +52,29 @@ class UserTest(TestCase):
         self.login_url = reverse(self.namespace + ':login')
         self.activate_url = reverse(self.namespace + ':activate', kwargs={'token': self.token})
         self.reset_url = reverse(self.namespace + ':resetpassword')
-        
+        self.retrieve_user_url = reverse(self.namespace + ':specific_user')
+        self.update_user_url = reverse(self.namespace + ':updateuser', kwargs={'token': self.user.token})
+
+    def test_retrieve_logged_in_user(self):
+        response = self.client.get(self.retrieve_user_url)
+
+        self.assertEqual(200, response.status_code)
+
+    def test_update_user_api(self):
+        response = self.client.put(self.update_user_url, self.body, format='json')
+        self.assertEqual(200, response.status_code)
+
+    def test_update_user_without_password_field(self):
+        body = self.user_body
+        body.update({'user': {'password': None}})
+        response = self.client.put(self.update_user_url, body, format='json')
+        self.assertEqual('Please provide a password', response.data.get('message'))
+
+    def test_reset_password_with_previous_password(self):
+        body = {'password': self.user_body.get('user').get('password')}
+        response = self.client.put(self.update_user_url, body, format='json')
+        self.assertEqual('Your new password can\'t be the same as your old password', response.data.get('message'))
+
     def test_create_user_api(self):
         response = self.client.post(self.create_url, self.body, format='json')
         response2 = self.client.post(self.create_url, self.body, format='json')
@@ -78,16 +103,20 @@ class UserTest(TestCase):
         self.assertEqual(400, response3.status_code)
         self.assertEqual(400, response4.status_code)
 
-
     def test_activate_user(self):
-        register = self.client.post(self.create_url, self.user_body, format='json')
+        self.client.post(self.create_url, self.user_body, format='json')
         user = get_user_model().objects.get(email=self.user_body.get('user').get('email'))
-        self.token = user.token
-        self.activate_url = reverse(self.namespace + ':activate', kwargs={'token': self.token})
+        self.activate_url = reverse(self.namespace + ':activate', kwargs={'token': user.token})
         activate = self.client.get(self.activate_url)
+
         self.assertEqual(activate.json().get('user').get('message'), 'Your account has already been activated.')
         self.assertEqual(activate.status_code, 200)
 
+        # Deactivate a user and then test activation endpoint
+        user.is_activated = False
+        user.save()
+        activate = self.client.get(self.activate_url)
+        self.assertEqual(activate.status_code, 200)
 
     def test_reset_password(self):
         register = self.client.post(self.create_url, self.user_body, format='json')

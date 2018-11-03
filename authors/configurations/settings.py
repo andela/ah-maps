@@ -180,7 +180,6 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
