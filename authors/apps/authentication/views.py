@@ -11,7 +11,7 @@ from .backends import JWTAuthentication
 
 from social_django.utils import load_backend, load_strategy
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
-from social_core.exceptions import MissingBackend, AuthTokenError
+from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -186,11 +186,11 @@ class SocialSignUp(CreateAPIView):
                 #oauth2 only has access token
                 access_token = serializer.data.get('access_token')
 
-        except HTTPError as e:
+        except HTTPError as error:
             return Response({
                 "error": {
                     "access_token": "invalid token",
-                    "details": str(e)
+                    "details": str(error)
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -199,10 +199,14 @@ class SocialSignUp(CreateAPIView):
             #social pipeline associate by email handles already associated exception
             authenticated_user = backend.do_auth(access_token, user=user)
 
-        except HTTPError as e:
+        except HTTPError as error:
             #catch any error as a result of the authentication
             return Response({ "error" : "invalid token",
-            "details":str(e) })
+            "details":str(error)})
+        
+        except AuthForbidden as error:
+           return Response({ "error" : "Invalid Token",
+            "details":str(error) })
 
         if authenticated_user and authenticated_user.is_active:
             #Check if the user you intend to authenticate is active
