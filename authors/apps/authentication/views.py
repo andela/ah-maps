@@ -6,18 +6,19 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from requests.exceptions import HTTPError
 from .backends import JWTAuthentication
 
 from social_django.utils import load_backend, load_strategy
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
-from social_core.exceptions import MissingBackend
+from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,SocialSignUpSerializer
 )
 from django.contrib.auth.hashers import check_password
-
+ 
 from .models import User
 
 auth = JWTAuthentication()
@@ -143,6 +144,7 @@ class SocialSignUp(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = SocialSignUpSerializer
+    
 
     def create(self, request, *args, **kwargs):
         """ Function to interrupt social_auth authentication pipeline"""
@@ -183,17 +185,38 @@ class SocialSignUp(CreateAPIView):
                 #oauth2 only has access token
                 access_token = serializer.data.get('access_token')
 
-        except HTTPError as e:
+        except HTTPError as error:
             return Response({
                 "error": {
                     "access_token": "invalid token",
-                    "details": str(e)
+                    "details": str(error)
                 }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        except AuthTokenError as error:
+             return Response({
+               "error":"invalid credentials",
+               "details": str(error)
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-        #authenticate the user(signup/login) with the user instance and the access_token received
-        authenticated_user = backend.do_auth(access_token, user=user)
+        try:
+            #authenticate the current user
+            #social pipeline associate by email handles already associated exception
+            authenticated_user = backend.do_auth(access_token, user=user)
+
+        except HTTPError as error:
+            #catch any error as a result of the authentication
+            return Response({ 
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
+        
+        except AuthForbidden as error:
+            return Response({ 
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
 
         if authenticated_user and authenticated_user.is_active:
             #Check if the user you intend to authenticate is active
@@ -203,8 +226,9 @@ class SocialSignUp(CreateAPIView):
                         "username":authenticated_user.username,
                         "token":authenticated_user.token}
 
-            return Response(response,status=status.HTTP_201_CREATED,
+            return Response(response,status=status.HTTP_200_OK,
                                 headers=headers)
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
+              

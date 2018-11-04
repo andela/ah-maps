@@ -34,3 +34,4 @@ class SocialAuthTest(TestCase):
         # self.assertEqual(201, twitterresponse.status_code)
         # self.assertEqual(201, googleresponse.status_code)
 
+
