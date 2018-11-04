@@ -193,6 +193,13 @@ class SocialSignUp(CreateAPIView):
                     "details": str(error)
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        except AuthTokenError as error:
+             return Response({
+               "error":"invalid credentials",
+               "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
 
         try:
             #authenticate the current user
