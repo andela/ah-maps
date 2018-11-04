@@ -201,12 +201,16 @@ class SocialSignUp(CreateAPIView):
 
         except HTTPError as error:
             #catch any error as a result of the authentication
-            return Response({ "error" : "invalid token",
-            "details":str(error)})
+            return Response({ 
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
         
         except AuthForbidden as error:
-           return Response({ "error" : "Invalid Token",
-            "details":str(error) })
+            return Response({ 
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
 
         if authenticated_user and authenticated_user.is_active:
             #Check if the user you intend to authenticate is active
