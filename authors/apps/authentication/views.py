@@ -216,7 +216,7 @@ class SocialSignUp(CreateAPIView):
                         "username":authenticated_user.username,
                         "token":authenticated_user.token}
 
-            return Response(response,status=status.HTTP_201_CREATED,
+            return Response(response,status=status.HTTP_200_OK,
                                 headers=headers)
         else:
             return Response({"errors": "Could not authenticate"},
