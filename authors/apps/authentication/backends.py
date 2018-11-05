@@ -10,7 +10,7 @@ from .models import User
 class JWTAuthentication(authentication.BaseAuthentication):
 
 
-    keyword = "token"
+    keyword = "Bearer"
 
 
     def authenticate(self, request):
@@ -55,7 +55,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed('No user found!')
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User has been deactivated')
-        return user
+        return user, payload
 
     def authenticate_header(self, request):
         return self.keyword

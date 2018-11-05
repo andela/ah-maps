@@ -18,7 +18,7 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,SocialSignUpSerializer
 )
 from django.contrib.auth.hashers import check_password
- 
+
 from .models import User
 
 auth = JWTAuthentication()
@@ -85,6 +85,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class ActivateAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -92,12 +93,32 @@ class ActivateAPIView(APIView):
 
     def get(self, request, token):
         user = auth.authenticate_credentials(request, token)
-        if user.is_activated:
+        if user[0].is_activated:
             message = {"message": "Your account has already been activated."}
             return Response(message, status=status.HTTP_200_OK)
-        user.is_activated = True
-        user.save()
+        user[0].is_activated = True
+        user[0].save()
         message = {"message": "Your account has been activated successfully"}
+        return Response(message, status=status.HTTP_200_OK)
+
+class ResendActivationEmailAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(request.user)
+        email = request.data.get('email', None)
+
+        if not email:
+            message = {"message": "Please provide an email address"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(email)
+        user = serializer.get_user(email=email)
+        token = user.token
+        serializer.resend_confirmation_email(email, token, request)
+        message = {"message": "Success, an activation link has been re-sent to your email."}
         return Response(message, status=status.HTTP_200_OK)
 
 
@@ -106,13 +127,13 @@ class ResetPasswordAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
-
     def post(self, request):
-        serializer = self.serializer_class(request.user)
         email = request.data.get('email', None)
         if not email:
             message = {"message": "Please provide an email address"}
             return Response(message, status=status.HTTP_200_OK)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(email)
         user = serializer.get_user(email=email)
         token = user.token
         serializer.reset_password(email, token, request)
@@ -125,18 +146,19 @@ class UpdateUserAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
-
     def put(self, request, token):
         user = auth.authenticate_credentials(request, token)
         password = request.data.get('password', None)
         if not password:
             message = {"message": "Please provide a password"}
             return Response(message, status=status.HTTP_200_OK)
-        if check_password(password, user.password):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(password)
+        if check_password(password, user[0].password):
             message = {"message": "Your new password can't be the same as your old password"}
             return Response(message, status=status.HTTP_200_OK)
-        user.set_password(password)
-        user.save()
+        user[0].set_password(password)
+        user[0].save()
         message = {"message": "Your password has been updated successfully"}
         return Response(message, status=status.HTTP_200_OK)
 
@@ -145,7 +167,7 @@ class SocialSignUp(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = SocialSignUpSerializer
-    
+
 
     def create(self, request, *args, **kwargs):
         """ Function to interrupt social_auth authentication pipeline"""
@@ -194,6 +216,13 @@ class SocialSignUp(CreateAPIView):
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        except AuthTokenError as error:
+             return Response({
+               "error":"invalid credentials",
+               "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
         try:
             #authenticate the current user
             #social pipeline associate by email handles already associated exception
@@ -201,12 +230,16 @@ class SocialSignUp(CreateAPIView):
 
         except HTTPError as error:
             #catch any error as a result of the authentication
-            return Response({ "error" : "invalid token",
-            "details":str(error)})
-        
+            return Response({
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
+
         except AuthForbidden as error:
-           return Response({ "error" : "Invalid Token",
-            "details":str(error) })
+            return Response({
+                "error" : "invalid token",
+                "details":str(error)
+                },status=status.HTTP_400_BAD_REQUEST)
 
         if authenticated_user and authenticated_user.is_active:
             #Check if the user you intend to authenticate is active
@@ -221,4 +254,3 @@ class SocialSignUp(CreateAPIView):
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
-              
