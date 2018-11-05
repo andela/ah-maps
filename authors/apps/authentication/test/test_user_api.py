@@ -61,7 +61,7 @@ class UserTest(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_update_user_api(self):
-        response = self.client.put(self.update_user_url, self.body, format='json')
+        response = self.client.put(self.update_user_url, self.user_body, format='json')
         self.assertEqual(200, response.status_code)
 
     def test_update_user_without_password_field(self):
@@ -123,4 +123,3 @@ class UserTest(TestCase):
         activate = self.client.post(self.reset_url, data={"email":self.user_body.get('user').get('email')}, head={"Content-Type":"application/json"})
         self.assertEqual(activate.json().get('user').get('message'), 'An email has been sent to your account')
         self.assertEqual(activate.status_code, 200)
-

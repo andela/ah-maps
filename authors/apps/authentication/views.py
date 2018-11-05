@@ -18,7 +18,7 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,SocialSignUpSerializer
 )
 from django.contrib.auth.hashers import check_password
- 
+
 from .models import User
 
 auth = JWTAuthentication()
@@ -108,11 +108,12 @@ class ResetPasswordAPIView(APIView):
     serializer_class = UserSerializer
 
     def post(self, request):
-        serializer = self.serializer_class(request.user)
         email = request.data.get('email', None)
         if not email:
             message = {"message": "Please provide an email address"}
             return Response(message, status=status.HTTP_200_OK)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(email)
         user = serializer.get_user(email=email)
         token = user.token
         serializer.reset_password(email, token, request)
@@ -131,6 +132,8 @@ class UpdateUserAPIView(APIView):
         if not password:
             message = {"message": "Please provide a password"}
             return Response(message, status=status.HTTP_200_OK)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(password)
         if check_password(password, user[0].password):
             message = {"message": "Your new password can't be the same as your old password"}
             return Response(message, status=status.HTTP_200_OK)
@@ -144,7 +147,7 @@ class SocialSignUp(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = SocialSignUpSerializer
-    
+
 
     def create(self, request, *args, **kwargs):
         """ Function to interrupt social_auth authentication pipeline"""
@@ -192,7 +195,7 @@ class SocialSignUp(CreateAPIView):
                     "details": str(error)
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         except AuthTokenError as error:
              return Response({
                "error":"invalid credentials",
@@ -207,13 +210,13 @@ class SocialSignUp(CreateAPIView):
 
         except HTTPError as error:
             #catch any error as a result of the authentication
-            return Response({ 
+            return Response({
                 "error" : "invalid token",
                 "details":str(error)
                 },status=status.HTTP_400_BAD_REQUEST)
-        
+
         except AuthForbidden as error:
-            return Response({ 
+            return Response({
                 "error" : "invalid token",
                 "details":str(error)
                 },status=status.HTTP_400_BAD_REQUEST)
@@ -231,4 +234,3 @@ class SocialSignUp(CreateAPIView):
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)
-              

@@ -9,7 +9,9 @@ from .models import User
 
 class JWTAuthentication(authentication.BaseAuthentication):
 
+
     keyword = "Bearer"
+
 
     def authenticate(self, request):
         """
@@ -19,6 +21,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         request.user = None
 
         # returns Authorization header as a bytestring
+
 
         auth_header = authentication.get_authorization_header(request).split()
 
@@ -48,7 +51,6 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         try:
             user = User.objects.get(pk=payload['id'])
-            request.user = user
         except User.DoesNotExist:
             raise exceptions.AuthenticationFailed('No user found!')
         if not user.is_active:
