@@ -85,6 +85,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class ActivateAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -92,11 +93,11 @@ class ActivateAPIView(APIView):
 
     def get(self, request, token):
         user = auth.authenticate_credentials(request, token)
-        if user.is_activated:
+        if user[0].is_activated:
             message = {"message": "Your account has already been activated."}
             return Response(message, status=status.HTTP_200_OK)
-        user.is_activated = True
-        user.save()
+        user[0].is_activated = True
+        user[0].save()
         message = {"message": "Your account has been activated successfully"}
         return Response(message, status=status.HTTP_200_OK)
 
@@ -105,7 +106,6 @@ class ResetPasswordAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
-
 
     def post(self, request):
         serializer = self.serializer_class(request.user)
@@ -125,18 +125,17 @@ class UpdateUserAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
-
     def put(self, request, token):
         user = auth.authenticate_credentials(request, token)
         password = request.data.get('password', None)
         if not password:
             message = {"message": "Please provide a password"}
             return Response(message, status=status.HTTP_200_OK)
-        if check_password(password, user.password):
+        if check_password(password, user[0].password):
             message = {"message": "Your new password can't be the same as your old password"}
             return Response(message, status=status.HTTP_200_OK)
-        user.set_password(password)
-        user.save()
+        user[0].set_password(password)
+        user[0].save()
         message = {"message": "Your password has been updated successfully"}
         return Response(message, status=status.HTTP_200_OK)
 
