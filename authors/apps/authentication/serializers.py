@@ -226,6 +226,7 @@ class UserSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("Sorry, that email account is not registered on Authors' Haven")
 
+
     def reset_password(self, email, token, request):
         User.objects.reset_password_email(email, token, request)
         return True

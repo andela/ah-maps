@@ -56,6 +56,7 @@ class UserTest(TestCase):
         self.update_user_url = reverse(self.namespace + ':updateuser', kwargs={'token': self.user.token})
         self.resend_activation_url = reverse(self.namespace + ':resend-activation-email')
 
+
     def test_retrieve_logged_in_user(self):
         response = self.client.get(self.retrieve_user_url)
 
@@ -130,6 +131,7 @@ class UserTest(TestCase):
         self.assertEqual(unregistered_email.status_code, 400)
         self.assertEqual(activate_wrong_email_format.json().get('errors').get('email')[0], 'Sorry, please enter a valid email address.')
         self.assertEqual(unregistered_email.json().get('errors')[0], "Sorry, that email account is not registered on Authors' Haven")
+
 
     def test_reset_password(self):
         register = self.client.post(self.create_url, self.user_body, format='json')
