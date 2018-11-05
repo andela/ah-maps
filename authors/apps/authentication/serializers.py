@@ -65,21 +65,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         read_only = True
     )
 
-    # Ensure email is unique
-    email = serializers.RegexField(
-        regex="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
-        required=True,
-        validators=[
-            UniqueValidator(
-                queryset=User.objects.all(),
-                message='Sorry, this email is already in use.',
-            )
-        ],
-        error_messages={
-            'required': 'Sorry, an email address is required.',
-            'invalid': 'Sorry, please enter a valid email address.'
-        }
-    )
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
@@ -150,7 +135,7 @@ class LoginSerializer(serializers.Serializer):
 
         if not user.is_activated:
             raise serializers.ValidationError(
-                'Please check your email for a link to complete your registration'
+                'To login, Please check your email for a link to complete your registration'
             )
 
         # The `validate` method should return a dictionary of validated data.
@@ -170,14 +155,29 @@ class UserSerializer(serializers.ModelSerializer):
     # characters. These values are the default provided by Django. We could
     # change them, but that would create extra work while introducing no real
     # benefit, so let's just stick with the defaults.
-    password = serializers.CharField(
+    password = serializers.RegexField(
+        regex="^(?=.*\d).{8,20}$",
         max_length=128,
         min_length=8,
-        write_only=True
+        write_only=True,
+        required=False,
+        error_messages={
+            'invalid': 'Sorry, passwords must contain a letter and a number.',
+            'min_length': 'Sorry, passwords must contain at least 8 characters.',
+            'max_length': 'Sorry, passwords cannot contain more than 128 characters.'
+        }
     )
+    email = serializers.RegexField(
+        regex="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+        required=False,
+        error_messages={
+            'invalid': 'Sorry, please enter a valid email address.'
+        }
+    )
+
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'password')
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
@@ -226,7 +226,7 @@ class UserSerializer(serializers.ModelSerializer):
                 user = User.objects.get(id=id)
             return user
         except User.DoesNotExist:
-            raise serializers.ValidationError('User does not exist')
+            raise serializers.ValidationError("That email account does not have an account on Authors' Haven")
 
 
     def reset_password(self, email, token, request):
