@@ -6,7 +6,7 @@ from versatileimagefield.fields import VersatileImageField
 
 
 class Article(models.Model):
-    author = models.ForeignKey(
+    user = models.ForeignKey(
         get_user_model(),
         related_name='author',
         on_delete=models.CASCADE,

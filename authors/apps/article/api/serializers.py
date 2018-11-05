@@ -6,7 +6,7 @@ TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
 
 NAMESPACE = 'article_api'
-fields = ('id', 'slug', 'image', 'title', 'description', 'body', 'author',)
+fields = ('id', 'slug', 'image', 'title', 'description', 'body', 'user',)
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -17,12 +17,12 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TABLE
 
-        fields = fields + ('update_url', 'delete_url')
+        fields = fields + ('author', 'update_url', 'delete_url')
 
     def get_author(self, obj):
         try:
             serializer = ProfileListSerializer(
-                instance=Profile.objects.get(user=obj.author)
+                instance=Profile.objects.get(user=obj.user)
             )
             return serializer.data
         except:
@@ -47,6 +47,8 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
         fields = fields
 
     def create(self, validated_data):
-        TABLE.objects.create(**validated_data)
+        instance = TABLE.objects.create(**validated_data)
+        validated_data['slug'] = instance.slug
+
         return validated_data
 

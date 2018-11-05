@@ -11,10 +11,11 @@ class ArticleFactory(factory.DjangoModelFactory):
     class Meta:
         model = Article
 
-    author = factory.SubFactory(UserFactory)
+    user = factory.SubFactory(UserFactory)
     title = faker.name()
     description = faker.text()
     body = faker.text()
+    slug = factory.Sequence(lambda n: 'map-slug%d' % n)
     image = factory.django.ImageField(color='blue')
 
 

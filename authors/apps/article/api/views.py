@@ -9,6 +9,7 @@ from rest_framework.permissions import (
  IsAuthenticatedOrReadOnly
 )
 from .serializers import TABLE, ArticleSerializer, ArticleCreateSerializer
+from ...core.permissions import IsOwnerOrReadOnly
 
 LOOKUP_FIELD = 'slug'
 
@@ -24,7 +25,8 @@ class ArticleListAPIView(ListAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(name__icontains=query) |
+                Q(title__icontains=query) |
+                Q(slug__icontains=query) |
                 Q(description__icontains=query)
             )
 
@@ -37,7 +39,7 @@ class ArticleCreateAPIView(CreateAPIView):
     queryset = TABLE.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(user=self.request.user)
 
 
 class ArticleDetailAPIView(RetrieveAPIView):
@@ -48,16 +50,16 @@ class ArticleDetailAPIView(RetrieveAPIView):
 
 class ArticleDeleteAPIView(DestroyAPIView):
     queryset = TABLE.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     serializer_class = ArticleSerializer
     lookup_field = LOOKUP_FIELD
 
 
 class ArticleUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = TABLE.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = LOOKUP_FIELD
 
     def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(user=self.request.user)
