@@ -58,6 +58,7 @@ LOCAL_APPS = (
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profile',
+    'authors.apps.article',
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS

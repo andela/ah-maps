@@ -25,6 +25,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
     path('', include(('authors.apps.profile.urls', 'profile'), namespace='profile')),
+    path('api/article/', include(('authors.apps.article.api.urls', 'article_api'), namespace='article_api')),
     path('api/profile/', include(('authors.apps.profile.api.urls', 'profile_api'), namespace='profile_api')),
     path('admin/', admin.site.urls),
     path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),
