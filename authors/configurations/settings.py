@@ -52,6 +52,7 @@ EXTERNAL_APPS = (
     'rest_framework',
     'versatileimagefield',
     'social_django',
+    'rest_framework_swagger',
 )
 
 LOCAL_APPS = (
