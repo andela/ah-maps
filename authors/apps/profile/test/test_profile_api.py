@@ -28,6 +28,11 @@ class ProfileApiTest(TestCase):
         self.my_profile_url = reverse(self.namespace + ':myprofile')
         self.update_url = reverse(self.namespace + ':update', kwargs={'user__username': self.profile.user.username})
         self.update_url_use2 = reverse(self.namespace + ':update', kwargs={'user__username': self.user2.username})
+        self.follow_url = reverse(self.namespace + ':follow_unfollow', kwargs={'username': self.user2.username})
+        self.get_followers_url = reverse(self.namespace + ':get_followers', kwargs={'username': self.user2.username})
+        self.get_following_url = reverse(self.namespace + ':get_followed', kwargs={'username': self.user2.username})
+        self.follow_url_non_existent = reverse(self.namespace + ':follow_unfollow', kwargs={'username': "noone"})
+        self.follow_yourself_url = reverse(self.namespace + ':follow_unfollow', kwargs={'username': self.profile.user.username})
 
     def test_list_profile_api(self):
         response1 = self.client.get(self.list_url)
@@ -56,6 +61,38 @@ class ProfileApiTest(TestCase):
     def test_update_own_profile_api(self):
         response = self.client.put(self.update_url, self.body)
         self.assertEqual(200, response.status_code)
+
+
+    def test_follow_user(self):
+        res = self.client.post(self.follow_url)
+        self.assertEqual(200, res.status_code)
+
+    def test_unfollow_user(self):
+        self.client.post(self.follow_url)
+        res = self.client.delete(self.follow_url)
+        self.assertEqual(200, res.status_code)
+
+    def test_get_followers(self):
+        res = self.client.get(self.get_followers_url)
+        self.assertEqual(200, res.status_code)
+
+    def test_get_following(self):
+        res = self.client.get(self.get_following_url)
+        self.assertEqual(200, res.status_code)
+
+    def test_unfollow_someone_you_dont_follow(self):
+        self.client.post(self.follow_url_non_existent)
+        res = self.client.delete(self.follow_url)
+        self.assertEqual(400, res.status_code)
+
+    def test_follow_yourself(self):
+        res = self.client.post(self.follow_yourself_url)
+        self.assertEqual(400, res.status_code)
+
+    def test_follow_someone_twice(self):
+        self.client.post(self.follow_url)
+        res =  self.client.post(self.follow_url)
+        self.assertEqual(400, res.status_code)
 
     def test_incorrect_url(self):
         response =self.client.get('/api/profile')
