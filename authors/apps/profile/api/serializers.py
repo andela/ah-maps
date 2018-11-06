@@ -11,7 +11,6 @@ User = get_user_model()
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     following = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
     image = VersatileImageFieldSerializer(
         sizes='person_headshot'
     )
