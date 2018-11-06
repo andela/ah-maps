@@ -101,6 +101,26 @@ class ActivateAPIView(APIView):
         message = {"message": "Your account has been activated successfully"}
         return Response(message, status=status.HTTP_200_OK)
 
+class ResendActivationEmailAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(request.user)
+        email = request.data.get('email', None)
+
+        if not email:
+            message = {"message": "Please provide an email address"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(email)
+        user = serializer.get_user(email=email)
+        token = user.token
+        serializer.resend_confirmation_email(email, token, request)
+        message = {"message": "Success, an activation link has been re-sent to your email."}
+        return Response(message, status=status.HTTP_200_OK)
+
 
 class ResetPasswordAPIView(APIView):
     permission_classes = (AllowAny,)

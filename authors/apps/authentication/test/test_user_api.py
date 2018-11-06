@@ -54,6 +54,8 @@ class UserTest(TestCase):
         self.reset_url = reverse(self.namespace + ':resetpassword')
         self.retrieve_user_url = reverse(self.namespace + ':specific_user')
         self.update_user_url = reverse(self.namespace + ':updateuser', kwargs={'token': self.user.token})
+        self.resend_activation_url = reverse(self.namespace + ':resend-activation-email')
+
 
     def test_retrieve_logged_in_user(self):
         response = self.client.get(self.retrieve_user_url)
@@ -116,7 +118,20 @@ class UserTest(TestCase):
         user.is_activated = False
         user.save()
         activate = self.client.get(self.activate_url)
+
+    
+    def test_resend_activation_email(self):
+        register = self.client.post(self.create_url, self.user_body, format='json')
+        activate = self.client.post(self.resend_activation_url, data={"email":self.user_body.get('user').get('email')}, head={"Content-Type":"application/json"})
+        activate_wrong_email_format = self.client.post(self.resend_activation_url, data={"email": "wrong_email_format"}, head={"Content-Type":"application/json"})
+        unregistered_email = self.client.post(self.resend_activation_url, data={"email": "unregistered@gmail.com"}, head={"Content-Type":"application/json"})
+        self.assertEqual(activate.json().get('user').get('message'), 'Success, an activation link has been re-sent to your email.')
         self.assertEqual(activate.status_code, 200)
+        self.assertEqual(activate_wrong_email_format.status_code, 400)
+        self.assertEqual(unregistered_email.status_code, 400)
+        self.assertEqual(activate_wrong_email_format.json().get('errors').get('email')[0], 'Sorry, please enter a valid email address.')
+        self.assertEqual(unregistered_email.json().get('errors')[0], "Sorry, that email account is not registered on Authors' Haven")
+
 
     def test_reset_password(self):
         register = self.client.post(self.create_url, self.user_body, format='json')

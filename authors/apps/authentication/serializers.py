@@ -65,7 +65,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         read_only = True
     )
 
-
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
@@ -80,7 +79,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         User.objects.send_confirmation_email(validated_data.get('email', None), user.token, self.context.get('request'))
         return user
-
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
@@ -226,11 +224,15 @@ class UserSerializer(serializers.ModelSerializer):
                 user = User.objects.get(id=id)
             return user
         except User.DoesNotExist:
-            raise serializers.ValidationError("That email account does not have an account on Authors' Haven")
+            raise serializers.ValidationError("Sorry, that email account is not registered on Authors' Haven")
 
 
     def reset_password(self, email, token, request):
         User.objects.reset_password_email(email, token, request)
+        return True
+
+    def resend_confirmation_email(self, email, token, request):
+        User.objects.send_confirmation_email(email, token, request)
         return True
 
 class SocialSignUpSerializer(serializers.Serializer):

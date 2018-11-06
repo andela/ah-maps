@@ -25,13 +25,12 @@ class SocialAuthTest(TestCase):
         }
 
     def test_social_auth_api(self):
-        pass
-        # facebookresponse = self.client.post(self.social_auth_url, self.test_social_body, format='json')
-        # twitterresponse = self.client.post(self.social_auth_url, self.test_twitter_body, format='json')
-        # googleresponse =self.client.post(self.social_auth_url, self.test_google_body, format='json')
+        facebookresponse = self.client.post(self.social_auth_url, self.test_social_body, format='json')
+        twitterresponse = self.client.post(self.social_auth_url, self.test_twitter_body, format='json')
+        googleresponse =self.client.post(self.social_auth_url, self.test_google_body, format='json')
+        self.assertEqual(200, facebookresponse.status_code)
+        self.assertEqual(200, twitterresponse.status_code)
+        self.assertEqual(200, googleresponse.status_code)
 
-        # self.assertEqual(201, facebookresponse.status_code)
-        # self.assertEqual(201, twitterresponse.status_code)
-        # self.assertEqual(201, googleresponse.status_code)
 
 
