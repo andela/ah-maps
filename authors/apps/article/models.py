@@ -14,9 +14,9 @@ class Article(models.Model):
         blank=True,
         default=None
     )
-    slug = AutoSlugField(populate_from='title', blank=True, null=True)
+    slug = AutoSlugField(populate_from='title', blank=True, null=True, unique=True)
     title = models.CharField(
-        _('Article field', 'name'),
+        _('Article field', 'title'),
         unique=True,
         max_length=128
     )
