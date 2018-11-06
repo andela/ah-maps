@@ -11,6 +11,7 @@ User = get_user_model()
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     following = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     image = VersatileImageFieldSerializer(
         sizes='person_headshot'
     )
@@ -21,8 +22,12 @@ class ProfileListSerializer(serializers.ModelSerializer):
 
         fields = fields + ('username', 'following', 'followers')
 
+
     def get_username(self, obj):
         return obj.user.username
+    
+    def get_email(Self, obj):
+        return obj.user.email
 
     def get_following(self, obj):
         data = []
