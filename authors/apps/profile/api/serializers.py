@@ -9,6 +9,7 @@ fields = ('image', 'bio',)
 
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     image = VersatileImageFieldSerializer(
         sizes='person_headshot'
     )
@@ -16,10 +17,13 @@ class ProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TABLE
 
-        fields = fields + ('username',)
+        fields = ('username', 'email') + fields
 
     def get_username(self, obj):
         return obj.user.username
+    
+    def get_email(Self, obj):
+        return obj.user.email
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
