@@ -220,3 +220,15 @@ VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     ]
 }
 
+SWAGGER_SETTINGS = {
+   'SHOW_REQUEST_HEADERS': True,
+   'USE_SESSION_AUTH': False,
+   'DOC_EXPANSION': 'list',
+   'SECURITY_DEFINITIONS': {
+       'api_key': {
+           'type': 'apiKey',
+           'in': 'header',
+           'name': 'Authorization'
+       }
+   }
+}
