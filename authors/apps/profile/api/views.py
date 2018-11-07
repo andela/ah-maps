@@ -4,8 +4,8 @@ from rest_framework.generics import (
   RetrieveUpdateAPIView,
   RetrieveAPIView,
   RetrieveUpdateDestroyAPIView,
-
 )
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -13,12 +13,15 @@ from rest_framework.permissions import (
  IsAuthenticatedOrReadOnly,
  IsAuthenticated
 )
+
 from rest_framework.response import Response
 from .serializers import (
     TABLE, ProfileListSerializer, ProfileUpdateSerializer, User, ProfileFollowSerializer
 )
+
 from ...core.permissions import IsOwnerOrReadOnly
 from django.contrib.sites.shortcuts import get_current_site
+
 
 def get_profile(username):
     try:
@@ -39,6 +42,7 @@ class ProfileDetailAPIView(RetrieveAPIView):
     serializer_class = ProfileListSerializer
     lookup_field = 'user__username'
 
+    
 class MyProfileDetailAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileListSerializer
@@ -51,6 +55,7 @@ class MyProfileDetailAPIView(RetrieveAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+      
 class ProfileUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = TABLE.objects.all()
@@ -62,6 +67,7 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileFollowSerializer
 
+    
     def post(self, request, username):
         '''Follow a user'''
         serializer = self.serializer_class(data={"username":username}, context={'request':request})
