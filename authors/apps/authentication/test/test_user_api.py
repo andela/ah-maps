@@ -106,7 +106,7 @@ class UserTest(TestCase):
         response= self.client.post(self.create_url, self.user_body, format='json')
     
         self.assertEqual(400, response.status_code)
-        self.assertEqual('Sorry, this username is already in use.', code='unique', response.data['errors']['username'])
+        self.assertEqual('Sorry, this username is already in use.',response.data['errors']['username'][0])
 
     def test_user_login(self):
         register= self.client.post(self.create_url, self.body, format='json')
