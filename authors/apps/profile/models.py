@@ -70,14 +70,14 @@ class Profile(models.Model):
 
     def get_followers(self, profile=None):
         if profile:
-            return profile.followers.all()
-        return self.followers.all()
+            return profile.followers.all().values_list('user__username', flat=True)
+        return self.followers.all().values_list('user__username', flat=True)
 
 
     def following(self, profile=None):
         if profile:
-            return profile.is_following.all()
-        return self.is_following()
+            return profile.is_following.all().values_list('user__username', flat=True)
+        return self.is_following().all().values_list('user__username', flat=True)
 
 
 

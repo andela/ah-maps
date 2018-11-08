@@ -4,8 +4,8 @@ from rest_framework.generics import (
   RetrieveUpdateAPIView,
   RetrieveAPIView,
   RetrieveUpdateDestroyAPIView,
-
 )
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -13,24 +13,22 @@ from rest_framework.permissions import (
  IsAuthenticatedOrReadOnly,
  IsAuthenticated
 )
+
 from rest_framework.response import Response
 from .serializers import (
-    TABLE, ProfileListSerializer, ProfileUpdateSerializer, User,
+    TABLE, ProfileListSerializer, ProfileUpdateSerializer, User, ProfileFollowSerializer
 )
+
 from ...core.permissions import IsOwnerOrReadOnly
 from django.contrib.sites.shortcuts import get_current_site
+
 
 def get_profile(username):
     try:
         profile = TABLE.objects.get(user__username=username)
-    except User.DoesNotExist:
-        serializers.ValidationError('User does not exist.')
+    except TABLE.DoesNotExist:
+        raise serializers.ValidationError('User {} does not exist.'.format(username))
     return profile
-
-
-def get_current_profile(request):
-    user = request.user
-    return user.profile
 
 
 class ProfileListAPIView(ListAPIView):
@@ -44,6 +42,7 @@ class ProfileDetailAPIView(RetrieveAPIView):
     serializer_class = ProfileListSerializer
     lookup_field = 'user__username'
 
+    
 class MyProfileDetailAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileListSerializer
@@ -56,6 +55,7 @@ class MyProfileDetailAPIView(RetrieveAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+      
 class ProfileUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = TABLE.objects.all()
@@ -65,31 +65,14 @@ class ProfileUpdateAPIView(RetrieveUpdateAPIView):
 
 class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileFollowSerializer
 
+    
     def post(self, request, username):
         '''Follow a user'''
-        try:
-            #check if user exists
-            user = User.objects.get(username=username)
-        except:
-            message = {"error": "User {} does not exists".format(username)}
-            return Response(message, status=status.HTTP_404_NOT_FOUND)
-
-        #ensure username has not been followed before
-        current_profile = get_current_profile(request)
-        is_following = current_profile.following(profile=current_profile)
-        if username in str(is_following):
-            message = {"error": "You cannot follow someone that you already follow"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
-
-        #ensure you don't follow yourself
-        current_username = User.objects.get(email=request.user).username
-        if current_username == username:
-            message = {'error': 'You cannot follow yourself.'}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
-        #follow
-        profile = get_profile(username)
-        current_profile.follow(profile)
+        serializer = self.serializer_class(data={"username":username}, context={'request':request})
+        serializer.is_valid(username)
+        serializer.save()
         message = {"success": "User {} followed successfully".format(username)}
         return Response(message, status=status.HTTP_200_OK)
 
@@ -97,6 +80,8 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
     def delete(self, request, username):
         '''unfollow a user'''
         # check if user exists
+        serializer = self.serializer_class(data={"username":username})
+        serializer.is_valid()
         try:
             user = User.objects.get(username=username)
         except:
@@ -104,9 +89,13 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
             return Response(message, status=status.HTTP_404_NOT_FOUND)
 
         # check if you are following that user
-        current_profile = get_current_profile(request)
+        current_profile = request.user.profile
         following = current_profile.following(profile=current_profile)
-        if username not in str(following):
+        comp = 0
+        for name in following:
+            if username == name:
+                comp += 1
+        if comp == 0:
             message = {"error": "You cannot unfollow someone that you don't follow"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
@@ -119,27 +108,27 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
 
 class ListFollowingProfilesAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileFollowSerializer
 
     def get(self, request, username):
         '''get following'''
+        serializer = self.serializer_class(data={"username":username})
+        serializer.is_valid(username)
         profile = get_profile(username)
         following = profile.following(profile=profile)
-        data = []
-        for i in following:
-            data.append(i.user.username)
-        message = {"following": data}
+        message = {"following": following}
         return Response(message, status=status.HTTP_200_OK)
 
 
 class ListFollowersProfilesAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileFollowSerializer
 
     def get(self, request, username):
         '''get followers'''
+        serializer = self.serializer_class(data={"username":username})
+        serializer.is_valid(username)
         profile = get_profile(username)
         followers = profile.get_followers(profile=profile)
-        data = []
-        for i in followers:
-            data.append(i.user.username)
-        message = {"followers": data}
+        message = {"followers": followers}
         return Response(message, status=status.HTTP_200_OK)
