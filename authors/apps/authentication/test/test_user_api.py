@@ -24,7 +24,6 @@ class UserTest(TestCase):
                 'email': faker.email(),
                 'password': faker.password()
             }
-
         self.user_body = {
                 'username': self.user.username,
                 'email': self.user.email,
@@ -101,6 +100,12 @@ class UserTest(TestCase):
         self.assertEqual(400, response4.status_code)
         self.assertEqual(400, response5.status_code)
         self.assertEqual(400, response6.status_code)
+    
+    def test_same_case(self):
+        self.user_body.update({'username':self.user_body['username'].upper()})
+        response= self.client.post(self.create_url, self.user_body, format='json')
+
+        self.assertEqual(400, response.status_code)
 
     def test_user_login(self):
         register= self.client.post(self.create_url, self.body, format='json')
