@@ -44,7 +44,7 @@ class ProfileDetailAPIView(RetrieveAPIView):
     serializer_class = ProfileListSerializer
     lookup_field = 'user__username'
 
-    
+
 class MyProfileDetailAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileListSerializer
@@ -58,7 +58,7 @@ class MyProfileDetailAPIView(RetrieveAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-      
+
 class ProfileUpdateAPIView(RetrieveUpdateAPIView):
     """update profile"""
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
@@ -71,7 +71,7 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileFollowSerializer
 
-    
+
     def post(self, request, username):
         """Follow a user"""
         serializer = self.serializer_class(data={"username":username}, context={'request':request})
@@ -94,12 +94,8 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
 
         # check if you are following that user
         current_profile = request.user.profile
-        following = current_profile.following(profile=current_profile)
-        comp = 0
-        for name in following:
-            if username == name:
-                comp += 1
-        if comp == 0:
+        user = current_profile.is_following.filter(user__username__exact=username).values_list('user__username')
+        if not user:
             message = {"error": "You cannot unfollow someone that you don't follow"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
@@ -116,7 +112,7 @@ class ListFollowingProfilesAPIView(RetrieveAPIView):
 
     def get(self, request, username):
         """get following"""
-        serializer = self.serializer_class(data={"username":username})
+        serializer = self.serializer_class(data={"username": username})
         serializer.is_valid(username)
         profile = get_profile(username)
         following = profile.following(profile=profile)

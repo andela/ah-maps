@@ -12,7 +12,6 @@ class ProfileManager(models.Manager):
         self.model.create(user=kwargs['instance'])
 
 
-
 class Profile(models.Model):
     user = models.OneToOneField(
         User,
@@ -54,11 +53,14 @@ class Profile(models.Model):
     )
     is_following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
+
     class Meta:
         app_label = 'profile'
 
+
     def __str__(self):
         return self.user.username
+
 
     def follow(self, profile):
         self.is_following.add(profile)
