@@ -134,6 +134,9 @@ class ResetPasswordAPIView(CreateAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(email)
         user = serializer.get_user(email=email)
+        if not user.is_activated:
+            message = {"message": "Please activate your account to continue"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         token = user.token
         serializer.reset_password(email, token, request)
         message = {"message": "An email has been sent to your account"}
@@ -150,12 +153,12 @@ class UpdateUserAPIView(RetrieveUpdateAPIView):
         password = request.data.get('password', None)
         if not password:
             message = {"message": "Please provide a password"}
-            return Response(message, status=status.HTTP_200_OK)
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(password)
         if check_password(password, user[0].password):
             message = {"message": "Your new password can't be the same as your old password"}
-            return Response(message, status=status.HTTP_200_OK)
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         user[0].set_password(password)
         user[0].save()
         message = {"message": "Your password has been updated successfully"}
