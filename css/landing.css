@@ -10,7 +10,7 @@ body {
   }
 
 
-  .banner{
+  .banner, .ui.inverted.menu {
       background-color:teal !important;
   }
 
