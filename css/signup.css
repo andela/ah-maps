@@ -1,0 +1,13 @@
+.wrapper {
+    margin-top: 55px;
+  }
+  
+  .column {
+    max-width: 355px !important;
+    text-align: center;
+  }
+  
+  .ui[class*="center aligned"].segment {
+    text-align: center;
+    max-width: 450px !important;
+}
