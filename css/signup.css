@@ -1,13 +1,29 @@
-.wrapper {
-    margin-top: 55px;
-  }
-  
-  .column {
-    max-width: 355px !important;
-    text-align: center;
-  }
-  
-  .ui[class*="center aligned"].segment {
-    text-align: center;
-    max-width: 450px !important;
+/* *{
+  font-family: Roboto sans-serif !important;
+} */
+
+.container-main{
+  margin-top: 2% !important;
+  width: 35% !important;
+  -webkit-animation: containerin 1s;
+}
+
+.submit-btn{
+  background-color: teal !important;
+}
+
+
+.social-btn{
+  margin-left: -5px !important;
+  margin-right: 10px !important;
+
+}
+
+.alt-login-par{
+  font-weight: bold;
+}
+
+@keyframes containerin{
+  from{ margin-top: -50%; }
+  to{ margin-top: 2%; }
 }
