@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.apps import apps
 from authors.apps.profile.api.serializers import ProfileListSerializer
+from django.db.models import Avg
+from django.core.validators import MinValueValidator, MaxValueValidator
+from authors import settings
 
 TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
@@ -52,3 +55,28 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
         return validated_data
 
+class RateSerizalizer(serializers.ModelSerializer):
+
+    rating = serializers.FloatField(
+        required=True,
+        validators=[
+            MinValueValidator(
+                settings.RATING_MIN,
+                message='Rating cannot be less than ' + str(settings.RATING_MIN)
+            ),
+            MaxValueValidator(
+                settings.RATING_MAX,
+                message='Rating cannot be more than ' + str(settings.RATING_MAX)
+            )
+        ],
+        error_messages={
+            'required': 'The rating is required'
+        }
+    )
+
+    class Meta:
+        model = apps.get_model('rating', 'Rating')
+
+        fields = ('user', 'article', 'rating',)
+
+        def get(self, validated_data):

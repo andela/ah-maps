@@ -4,7 +4,8 @@ from .views import (
    ArticleListAPIView,
    ArticleDeleteAPIView,
    ArticleDetailAPIView,
-   ArticleUpdateAPIView
+   ArticleUpdateAPIView,
+   ArticleRateAPIView
 )
 
 urlpatterns = [
@@ -12,5 +13,6 @@ urlpatterns = [
     path('create', ArticleCreateAPIView.as_view(), name='create'),
     path('delete/<slug>/', ArticleDeleteAPIView.as_view(), name='delete'),
     path('detail/<slug>/', ArticleDetailAPIView.as_view(), name='detail'),
-    path('update/<slug>/', ArticleUpdateAPIView.as_view(), name='update')
+    path('update/<slug>/', ArticleUpdateAPIView.as_view(), name='update'),
+    path('rate/<slug>/', ArticleRateAPIView.as_view(), name='rating')
 ]

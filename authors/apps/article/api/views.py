@@ -63,3 +63,8 @@ class ArticleUpdateAPIView(RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
+
+class ArticleRateAPIView(RetrieveAPIView):
+    queryset = TABLE.objects.all()
+    serializer_class = RateSerializer
+    lookup_field = LOOKUP_FIELD
