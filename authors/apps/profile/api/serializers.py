@@ -10,16 +10,13 @@ User = get_user_model()
 
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
-    following = serializers.SerializerMethodField()
     image = VersatileImageFieldSerializer(
         sizes='person_headshot'
     )
-    followers = serializers.SerializerMethodField()
-
     class Meta:
         model = TABLE
 
-        fields = fields + ('username', 'following', 'followers')
+        fields = fields + ('username',)
 
 
     def get_username(self, obj):

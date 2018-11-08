@@ -24,6 +24,7 @@ from .models import User
 auth = JWTAuthentication()
 
 class RegistrationAPIView(CreateAPIView):
+    """register a user """
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -42,6 +43,7 @@ class RegistrationAPIView(CreateAPIView):
 
 
 class LoginAPIView(CreateAPIView):
+    """login a user """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
@@ -63,7 +65,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
-    def retrieve(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        """retreive user details"""
         # There is nothing to validate or save here. Instead, we just want the
         # serializer to handle turning our `User` object into something that
         # can be JSONified and sent to the client.
@@ -71,7 +74,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
+        """update user details"""
         serializer_data = request.data
 
         # Here is that serialize, validate, save pattern we talked about
@@ -91,6 +95,7 @@ class ActivateAPIView(RetrieveAPIView):
     serializer_class = LoginSerializer
 
     def get(self, request, token):
+        """activate account"""
         user = auth.authenticate_credentials(request, token)
         if user[0].is_activated:
             message = {"message": "Your account has already been activated."}
@@ -106,6 +111,7 @@ class ResendActivationEmailAPIView(CreateAPIView):
     serializer_class = UserSerializer
 
     def post(self, request):
+        """re-send account activation link"""
         serializer = self.serializer_class(request.user)
         email = request.data.get('email', None)
 
@@ -127,6 +133,7 @@ class ResetPasswordAPIView(CreateAPIView):
     serializer_class = UserSerializer
 
     def post(self, request):
+        """send reset password link"""
         email = request.data.get('email', None)
         if not email:
             message = {"message": "Please provide an email address"}
@@ -149,6 +156,7 @@ class UpdateUserAPIView(RetrieveUpdateAPIView):
     serializer_class = UserSerializer
 
     def put(self, request, token):
+        """reset password route"""
         user = auth.authenticate_credentials(request, token)
         password = request.data.get('password', None)
         if not password:
@@ -171,8 +179,8 @@ class SocialSignUp(CreateAPIView):
     serializer_class = SocialSignUpSerializer
 
 
-    def create(self, request, *args, **kwargs):
-        """ Function to interrupt social_auth authentication pipeline"""
+    def post(self, request, *args, **kwargs):
+        """ interrupt social_auth authentication pipeline"""
         #pass the request to serializer to make it a python object
         #serializer also catches errors of blank request objects
         serializer = self.serializer_class(data=request.data)

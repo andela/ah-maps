@@ -77,15 +77,18 @@ class UserTest(TestCase):
         response = self.client.get(self.retrieve_user_url)
         self.assertEqual(200, response.status_code)
 
+
     def test_update_user_api(self):
         response = self.client.put(self.update_user_url, self.new_user_body, format='json')
         self.assertEqual(200, response.status_code)
+        
 
     def test_update_user_without_password_field(self):
         body = self.user_body
         body.update({'password': None})
         response = self.client.put(self.update_user_url, body, format='json')
         self.assertEqual('Please provide a password', response.data.get('message'))
+
 
     def test_reset_password_with_previous_password(self):
         body = {'password': self.user_body.get('password')}

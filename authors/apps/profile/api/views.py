@@ -32,12 +32,14 @@ def get_profile(username):
 
 
 class ProfileListAPIView(ListAPIView):
+    """List all user profiles"""
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileListSerializer
     queryset = TABLE.objects.all()
 
 
 class ProfileDetailAPIView(RetrieveAPIView):
+    """specific user profile details"""
     queryset = TABLE.objects.all()
     serializer_class = ProfileListSerializer
     lookup_field = 'user__username'
@@ -47,7 +49,8 @@ class MyProfileDetailAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProfileListSerializer
 
-    def retrieve(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        """my profile details"""
         # There is nothing to validate or save here. Instead, we just want the
         # serializer to handle turning our `User` object into something that
         # can be JSONified and sent to the client.
@@ -57,6 +60,7 @@ class MyProfileDetailAPIView(RetrieveAPIView):
 
       
 class ProfileUpdateAPIView(RetrieveUpdateAPIView):
+    """update profile"""
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = TABLE.objects.all()
     serializer_class = ProfileUpdateSerializer
@@ -69,7 +73,7 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
 
     
     def post(self, request, username):
-        '''Follow a user'''
+        """Follow a user"""
         serializer = self.serializer_class(data={"username":username}, context={'request':request})
         serializer.is_valid(username)
         serializer.save()
@@ -78,7 +82,7 @@ class FollowProfilesAPIView(RetrieveUpdateDestroyAPIView):
 
 
     def delete(self, request, username):
-        '''unfollow a user'''
+        """unfollow a user"""
         # check if user exists
         serializer = self.serializer_class(data={"username":username})
         serializer.is_valid()
@@ -111,7 +115,7 @@ class ListFollowingProfilesAPIView(RetrieveAPIView):
     serializer_class = ProfileFollowSerializer
 
     def get(self, request, username):
-        '''get following'''
+        """get following"""
         serializer = self.serializer_class(data={"username":username})
         serializer.is_valid(username)
         profile = get_profile(username)
@@ -125,7 +129,7 @@ class ListFollowersProfilesAPIView(RetrieveAPIView):
     serializer_class = ProfileFollowSerializer
 
     def get(self, request, username):
-        '''get followers'''
+        """get followers"""
         serializer = self.serializer_class(data={"username":username})
         serializer.is_valid(username)
         profile = get_profile(username)
