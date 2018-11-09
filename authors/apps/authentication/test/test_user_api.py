@@ -29,6 +29,11 @@ class UserTest(TestCase):
                 'email': self.user.email,
                 'password': '1234abcd'
         }
+        self.new_user_body = {
+                'username': self.user.username,
+                'email': self.user.email,
+                'password': '1234abcde'
+        }
         self.not_exist= {
                 'username': faker.first_name(),
                 'email': faker.email(),
@@ -71,15 +76,18 @@ class UserTest(TestCase):
         response = self.client.get(self.retrieve_user_url)
         self.assertEqual(200, response.status_code)
 
+
     def test_update_user_api(self):
-        response = self.client.put(self.update_user_url, self.user_body, format='json')
+        response = self.client.put(self.update_user_url, self.new_user_body, format='json')
         self.assertEqual(200, response.status_code)
+        
 
     def test_update_user_without_password_field(self):
         body = self.user_body
         body.update({'password': None})
         response = self.client.put(self.update_user_url, body, format='json')
         self.assertEqual('Please provide a password', response.data.get('message'))
+
 
     def test_reset_password_with_previous_password(self):
         body = {'password': self.user_body.get('password')}
@@ -93,7 +101,7 @@ class UserTest(TestCase):
         response4 = self.client.post(self.create_url, self.no_email, format='json')
         response5 = self.client.post(self.create_url, self.email_format, format='json')
         response6 = self.client.post(self.create_url, self.password_length, format='json')
-     
+
         self.assertEqual(201, response.status_code)
         self.assertEqual(400, response2.status_code)
         self.assertEqual(400, response3.status_code)
@@ -135,7 +143,7 @@ class UserTest(TestCase):
         user.save()
         activate = self.client.get(self.activate_url)
 
-    
+
     def test_resend_activation_email(self):
         register = self.client.post(self.create_url, self.user_body, format='json')
         activate = self.client.post(self.resend_activation_url, data={"email":self.user_body.get('email')}, head={"Content-Type":"application/json"})

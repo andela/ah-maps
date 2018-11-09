@@ -24,14 +24,16 @@ from .models import User
 auth = JWTAuthentication()
 
 class RegistrationAPIView(CreateAPIView):
+    """register a user """
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
     def post(self, request):
-        request.data['username']=request.data['username'].lower()
+        request.data['username'] = request.data['username'].lower()
         user = request.data
+ 
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -43,6 +45,7 @@ class RegistrationAPIView(CreateAPIView):
 
 
 class LoginAPIView(CreateAPIView):
+    """login a user """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
@@ -64,7 +67,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
-    def retrieve(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        """retreive user details"""
         # There is nothing to validate or save here. Instead, we just want the
         # serializer to handle turning our `User` object into something that
         # can be JSONified and sent to the client.
@@ -72,7 +76,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
+        """update user details"""
         serializer_data = request.data
 
         # Here is that serialize, validate, save pattern we talked about
@@ -92,6 +97,7 @@ class ActivateAPIView(RetrieveAPIView):
     serializer_class = LoginSerializer
 
     def get(self, request, token):
+        """activate account"""
         user = auth.authenticate_credentials(request, token)
         if user[0].is_activated:
             message = {"message": "Your account has already been activated."}
@@ -107,6 +113,7 @@ class ResendActivationEmailAPIView(CreateAPIView):
     serializer_class = UserSerializer
 
     def post(self, request):
+        """re-send account activation link"""
         serializer = self.serializer_class(request.user)
         email = request.data.get('email', None)
 
@@ -128,6 +135,7 @@ class ResetPasswordAPIView(CreateAPIView):
     serializer_class = UserSerializer
 
     def post(self, request):
+        """send reset password link"""
         email = request.data.get('email', None)
         if not email:
             message = {"message": "Please provide an email address"}
@@ -135,6 +143,9 @@ class ResetPasswordAPIView(CreateAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(email)
         user = serializer.get_user(email=email)
+        if not user.is_activated:
+            message = {"message": "Please activate your account to continue"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         token = user.token
         serializer.reset_password(email, token, request)
         message = {"message": "An email has been sent to your account"}
@@ -147,16 +158,17 @@ class UpdateUserAPIView(RetrieveUpdateAPIView):
     serializer_class = UserSerializer
 
     def put(self, request, token):
+        """reset password route"""
         user = auth.authenticate_credentials(request, token)
         password = request.data.get('password', None)
         if not password:
             message = {"message": "Please provide a password"}
-            return Response(message, status=status.HTTP_200_OK)
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(password)
         if check_password(password, user[0].password):
             message = {"message": "Your new password can't be the same as your old password"}
-            return Response(message, status=status.HTTP_200_OK)
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         user[0].set_password(password)
         user[0].save()
         message = {"message": "Your password has been updated successfully"}
@@ -169,8 +181,8 @@ class SocialSignUp(CreateAPIView):
     serializer_class = SocialSignUpSerializer
 
 
-    def create(self, request, *args, **kwargs):
-        """ Function to interrupt social_auth authentication pipeline"""
+    def post(self, request, *args, **kwargs):
+        """ interrupt social_auth authentication pipeline"""
         #pass the request to serializer to make it a python object
         #serializer also catches errors of blank request objects
         serializer = self.serializer_class(data=request.data)
