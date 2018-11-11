@@ -5,14 +5,14 @@ from django.apps import apps
 from django.db.models import Avg
 from authors.apps.profile.api.serializers import ProfileListSerializer
 from ...core.upload import uploader
+import readtime
 
 TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
 Rating = apps.get_model('rating', 'Rating')
 
 NAMESPACE = 'article_api'
-fields = ('id', 'slug', 'image', 'title', 'description',
-          'body', 'user')
+fields = ('id', 'slug', 'image', 'title', 'description', 'body', 'user')
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -29,6 +29,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     liked_by = serializers.SerializerMethodField(read_only=True)
     disliked_by = serializers.SerializerMethodField(read_only=True)
     rating = serializers.SerializerMethodField(read_only=True)
+    reading_time = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
         """Metadata description."""
@@ -38,7 +40,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author', 'favorited',
             'favorites_count', 'liked_by',
             'disliked_by', 'image_file', 'rating',
-            'update_url', 'delete_url')
+            'update_url', 'delete_url', 'reading_time')
 
     def get_favorited(self, obj):
         user = self.context['request'].user
@@ -56,6 +58,9 @@ class ArticleSerializer(serializers.ModelSerializer):
         """Get users followers."""
         data = obj.disliked_by.all().values_list('user__username', flat=True)
         return data
+
+    def get_reading_time(self, obj):
+        return str(readtime.of_text(obj.body))
 
     def get_author(self, obj):
         """Get article author."""

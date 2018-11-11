@@ -97,3 +97,7 @@ class ArticleApiTest(TestCase):
     def test_get_dislikers(self):
         res = self.client.get(self.dislikers_url)
         self.assertEqual(200, res.status_code)
+    def test_reading_time_of_article(self):
+        response = self.client.get(self.retrieve_url)
+        self.assertEqual(response.json().get('reading_time'), '1 min read')
+        
