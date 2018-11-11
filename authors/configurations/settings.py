@@ -237,6 +237,7 @@ SWAGGER_SETTINGS = {
    }
 }
 
+<<<<<<< HEAD
 cloudinary.config(
   cloud_name="p8ul",
   api_key="863844723734692",
@@ -244,3 +245,7 @@ cloudinary.config(
 )
 RATING_MIN = 0
 RATING_MAX = 5
+=======
+RATING_MIN = 0
+RATING_MAX = 5
+>>>>>>> feat(rating): users should be able to rate an article
