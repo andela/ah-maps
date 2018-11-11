@@ -63,6 +63,7 @@ LOCAL_APPS = (
     'authors.apps.core',
     'authors.apps.profile',
     'authors.apps.article',
+    'authors.apps.rating'
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS
@@ -241,3 +242,5 @@ cloudinary.config(
   api_key="863844723734692",
   api_secret="_wx9nneKL7v5kWdrpqiEUD7Dees"
 )
+RATING_MIN = 0
+RATING_MAX = 5

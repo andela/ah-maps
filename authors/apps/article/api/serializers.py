@@ -2,11 +2,13 @@
 
 from rest_framework import serializers
 from django.apps import apps
+from django.db.models import Avg
 from authors.apps.profile.api.serializers import ProfileListSerializer
 from ...core.upload import uploader
 
 TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
+Rating = apps.get_model('rating', 'Rating')
 
 NAMESPACE = 'article_api'
 fields = ('id', 'slug', 'image', 'title', 'description',
@@ -25,6 +27,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     liked_by = serializers.SerializerMethodField(read_only=True)
     disliked_by = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         """Metadata description."""
@@ -32,7 +35,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = TABLE
 
         fields = fields + ('author', 'update_url',
-                           'delete_url', 'liked_by', 'disliked_by', 'image_url')
+                           'delete_url', 'liked_by', 'disliked_by', 'image_url', 'rating')
 
     def get_liked_by(self, obj):
         """Get users following."""
@@ -53,6 +56,10 @@ class ArticleSerializer(serializers.ModelSerializer):
             return serializer.data
         except Profile.DoesNotExist:
             return {}
+    
+    def get_rating(self, obj):
+        average = Rating.objects.filter(article__pk=obj.pk).aggregate(Avg('your_rating'))
+        return average['your_rating__avg']
 
     def get_image_url(self, obj):
         return obj.image
