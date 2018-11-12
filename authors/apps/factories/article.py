@@ -16,6 +16,6 @@ class ArticleFactory(factory.DjangoModelFactory):
     description = faker.text()
     body = faker.text()
     slug = factory.Sequence(lambda n: 'map-slug%d' % n)
-    image = factory.django.ImageField(color='blue')
+    image = faker.image_url(width=None, height=None)
 
 

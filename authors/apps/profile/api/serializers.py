@@ -1,43 +1,36 @@
 from rest_framework import serializers
 from django.apps import apps
 from django.contrib.auth import get_user_model
-from versatileimagefield.serializers import VersatileImageFieldSerializer
+from ...core.upload import uploader
 
 TABLE = apps.get_model('profile', 'Profile')
 APP = 'profile_api'
 fields = ('image', 'bio',)
 User = get_user_model()
 
+
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
-    image = VersatileImageFieldSerializer(
-        sizes='person_headshot'
-    )
+    image = serializers.ImageField(required=False)
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = TABLE
 
-        fields = fields + ('username',)
-
+        fields = fields + ('username', 'image_url')
 
     def get_username(self, obj):
         return obj.user.username
 
-    def get_email(Self, obj):
+    def get_email(self, obj):
         return obj.user.email
 
-    def get_following(self, obj):
-        data = []
-        for i in obj.is_following.all():
-            data.append(i.user.username)
-        return data
+    def get_image_url(self, obj):
+        return obj.image
 
-    def get_followers(self, obj):
-        data = []
-        for i in obj.followers.all():
-            data.append(i.user.username)
-        return data
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = TABLE
@@ -47,7 +40,9 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.bio = validated_data.get('bio', instance.bio)
         if validated_data.get('image'):
-            instance.image = validated_data.get('image', instance.image)
+            image = uploader(validated_data.get('image'))
+            if image:
+                instance.image = image.get('secure_url', instance.image)
         instance.save()
 
         return instance
@@ -65,11 +60,11 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
         }
 
     )
+
     class Meta:
         model = TABLE
 
         fields = ['username',]
-
 
     def create(self, validated_data):
         current_profile = self.context.get('request').user.profile

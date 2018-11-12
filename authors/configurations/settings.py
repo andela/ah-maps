@@ -7,7 +7,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os, dj_database_url
+import os
+import dj_database_url
+import cloudinary
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -232,3 +234,9 @@ SWAGGER_SETTINGS = {
        }
    }
 }
+
+cloudinary.config(
+  cloud_name="p8ul",
+  api_key="863844723734692",
+  api_secret="_wx9nneKL7v5kWdrpqiEUD7Dees"
+)

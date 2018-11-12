@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
 from autoslug import AutoSlugField
-from versatileimagefield.fields import VersatileImageField
 
 
 class Article(models.Model):
@@ -30,24 +29,7 @@ class Article(models.Model):
         blank=True,
         null=True
     )
-    image = VersatileImageField(
-        'Image',
-        upload_to='article/',
-        width_field='width',
-        height_field='height',
-        blank=True,
-        null=True
-    )
-    height = models.PositiveIntegerField(
-        'Image Height',
-        blank=True,
-        null=True
-    )
-    width = models.PositiveIntegerField(
-        'Image Width',
-        blank=True,
-        null=True
-    )
+    image = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(
         _('Article field', 'created at'),
         auto_now_add=True,
