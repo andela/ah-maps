@@ -1,3 +1,4 @@
+import factory
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -62,7 +63,6 @@ class ProfileApiTest(TestCase):
         response = self.client.put(self.update_url, self.body)
         self.assertEqual(200, response.status_code)
 
-
     def test_follow_user(self):
         res = self.client.post(self.follow_url)
         self.assertEqual(200, res.status_code)
@@ -91,9 +91,9 @@ class ProfileApiTest(TestCase):
 
     def test_follow_someone_twice(self):
         self.client.post(self.follow_url)
-        res =  self.client.post(self.follow_url)
+        res = self.client.post(self.follow_url)
         self.assertEqual(400, res.status_code)
 
     def test_incorrect_url(self):
-        response =self.client.get('/api/profile')
+        response = self.client.get('/api/profile')
         self.assertEqual(response.status_code, 404)

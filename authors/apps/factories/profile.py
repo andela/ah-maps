@@ -15,6 +15,6 @@ class ProfileFactory(factory.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     bio = faker.text()
-    image = factory.django.ImageField(color='blue')
+    image = faker.image_url(width=None, height=None)
 
 
