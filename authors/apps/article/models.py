@@ -52,11 +52,11 @@ class Article(models.Model):
 
     def like_article(self, profile):
         """Like an article."""
-        self.liked_by.add(profile)
+        profile.liked_articles.add(self)
 
     def dislike_article(self, profile):
         """Dislike an article."""
-        self.disliked_by.add(profile)
+        profile.disliked_articles.add(self)
 
     def get_likers(self):
         """Get profiles that like the article."""
@@ -68,11 +68,11 @@ class Article(models.Model):
 
     def unlike_article(self, profile):
         """Unlike an article."""
-        self.liked_by.remove(profile)
+        profile.liked_articles.remove(self)
 
     def undislike_article(self, profile):
         """Undislike an article."""
-        self.disliked_by.remove(profile)
+        profile.disliked_articles.remove(self)
 
     class Meta:
         """define metadata."""

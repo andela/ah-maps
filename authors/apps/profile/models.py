@@ -59,17 +59,13 @@ class Profile(models.Model):
         """Unfollow a profile."""
         self.is_following.remove(profile)
 
-    def get_followers(self, profile=None):
+    def get_followers(self, profile):
         """Get a profile's followers."""
-        if profile:
-            return profile.followers.all().values_list('user__username', flat=True)
-        return self.followers.all().values_list('user__username', flat=True)
+        return profile.followers.all().values('user__username', 'image')
 
-    def following(self, profile=None):
+    def following(self, profile):
         """Get a profiles following."""
-        if profile:
-            return profile.is_following.all().values_list('user__username', flat=True)
-        return self.is_following().all().values_list('user__username', flat=True)
+        return profile.is_following.all().values('user__username', 'image')
 
 
 def create_profile(sender, **kwargs):

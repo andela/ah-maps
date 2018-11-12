@@ -70,6 +70,14 @@ class ModuleApiTest(TestCase):
         response = self.client.delete(self.delete_url)
         self.assertEqual(204, response.status_code)
 
+    def test_like_article(self):
+        res = self.client.post(self.like_url)
+        self.assertEqual(200, res.status_code)
+
+    def test_dislike_article(self):
+        res = self.client.post(self.dislike_url)
+        self.assertEqual(200, res.status_code)
+
     def test_cancel_like(self):
         self.client.post(self.like_url)
         res = self.client.post(self.like_url)
@@ -81,14 +89,6 @@ class ModuleApiTest(TestCase):
         res = self.client.post(self.dislike_url)
         self.assertEqual(200, res.status_code)
         self.assertContains(res, "Dislike cancelled successfully.")
-
-    # def test_like_article(self):
-    #     res = self.client.post(self.like_url)
-    #     self.assertEqual(200, res.status_code)
-    #
-    # def test_dislike_article(self):
-    #     res = self.client.post(self.dislike_url)
-    #     self.assertEqual(200, res.status_code)
 
     def test_get_likers(self):
         res = self.client.get(self.likers_url)

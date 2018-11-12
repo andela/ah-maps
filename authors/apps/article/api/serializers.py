@@ -32,7 +32,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = TABLE
 
         fields = fields + ('author', 'update_url',
-                           'delete_url', 'liked_by', 'disliked_by')
+                           'delete_url', 'liked_by', 'disliked_by', 'image_url')
 
     def get_liked_by(self, obj):
         """Get users following."""
