@@ -9,9 +9,7 @@ from .models import User
 
 class JWTAuthentication(authentication.BaseAuthentication):
 
-
     keyword = "Bearer"
-
 
     def authenticate(self, request):
         """

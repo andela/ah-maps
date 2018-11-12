@@ -1,4 +1,5 @@
 from django.db.models import Q
+from rest_framework import pagination
 from rest_framework.generics import (
   ListAPIView, CreateAPIView,
   RetrieveUpdateAPIView,
@@ -10,19 +11,25 @@ from rest_framework.permissions import (
 )
 from .serializers import TABLE, ArticleSerializer, ArticleCreateSerializer
 from ...core.permissions import IsOwnerOrReadOnly
+from ...core.pagination import PostLimitOffsetPagination
 
 LOOKUP_FIELD = 'slug'
+PAGE_SIZE_KEY = 'page_size'
+SEARCH_QUERY_PARAMETER = 'q'
 
 
 class ArticleListAPIView(ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ArticleSerializer
+    pagination_class = PostLimitOffsetPagination
 
     def get_queryset(self, *args, **kwargs):
         """get all articles"""
         queryset_list = TABLE.objects.all()
 
-        query = self.request.GET.get('q')
+        page_size = self.request.GET.get(PAGE_SIZE_KEY)
+        query = self.request.GET.get(SEARCH_QUERY_PARAMETER)
+        pagination.PageNumberPagination.page_size = page_size if page_size else 10
 
         if query:
             queryset_list = queryset_list.filter(

@@ -157,7 +157,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 "username": self.get_full_name,
                 "email": self.email,
                 "iat": datetime.utcnow(),
-                "exp": datetime.utcnow() + timedelta(minutes=60)
+                "exp": datetime.utcnow() + timedelta(minutes=1440)
             },
             settings.SECRET_KEY, algorithm='HS256').decode()
         return token
