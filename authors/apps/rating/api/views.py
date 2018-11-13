@@ -86,8 +86,9 @@ class RateAPIView(GenericAPIView):
 
         if isinstance(article, dict):
             raise ValidationError(detail={'article': 'Sorry, none of our articles has that slug'})
-        # If the user is authenticated, return their rating as well but if not authenticated...
-        # return only the average of the rating
+        # If the user is authenticated, return his/her rating, the article slug, and the average rating...
+        # but if not authenticated...
+        # return only the average rating and the article slug
         rating = None
         if request.user.is_authenticated:
             try:

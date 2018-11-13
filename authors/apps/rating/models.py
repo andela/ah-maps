@@ -22,9 +22,6 @@ class Rating(models.Model):
         app_label = 'rating'
 
     def __str__(self):
-        return self.article.title
+        return self.your_rating
 
-    def average_rating(self):
-        average = self.aggregate(models.Avg('your_rating'))
-        return average['your_rating__avg']
 
