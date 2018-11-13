@@ -27,16 +27,42 @@ class BookmarksApiTest(TestCase):
         self.unbookmark_url = reverse(
             self.namespace + ':remove', kwargs={'slug': self.article.slug})
         self.list_bookmarks_url = reverse(self.namespace + ':list')
+        self.bookmark_non_existing_url = reverse(
+            self.namespace + ':remove', kwargs={'slug': "fake-slug"})
+        self.unbookmark_non_existing_url = reverse(
+            self.namespace + ':remove', kwargs={'slug': "fake-slug"})
 
     def test_bookmark_article(self):
         """Test bookmark an article."""
         res = self.client.post(self.bookmark_url)
         self.assertEqual(200, res.status_code)
 
+    def test_bookmark_article_twice(self):
+        """Test bookmark same article twice."""
+        self.client.post(self.bookmark_url)
+        res = self.client.post(self.bookmark_url)
+        self.assertEqual(400, res.status_code)
+
     def test_unbookmark_article(self):
         """Test undo bookmark."""
         res = self.client.post(self.unbookmark_url)
         self.assertEqual(200, res.status_code)
+
+    def test_unbookmark_article_not_bookmarked(self):
+        """Test unbookmark unbookmarked article."""
+        self.client.post(self.unbookmark_url)
+        res = self.client.post(self.unbookmark_url)
+        self.assertEqual(400, res.status_code)
+
+    def test_bookmark_non_existing_article(self):
+        """Test bookmark non-existing article."""
+        res = self.client.post(self.bookmark_non_existing_url)
+        self.assertEqual(400, res.status_code)
+
+    def test_unbookmark_non_existing_article(self):
+        """Test bookmark non-existing article."""
+        res = self.client.post(self.unbookmark_non_existing_url)
+        self.assertEqual(400, res.status_code)
 
     def test_list_my_bookmarks(self):
         """Test get my bookmarks."""
