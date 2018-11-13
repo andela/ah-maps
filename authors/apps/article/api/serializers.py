@@ -14,13 +14,21 @@ class ArticleSerializer(serializers.ModelSerializer):
     update_url = serializers.HyperlinkedIdentityField(view_name=NAMESPACE + ':update', lookup_field='slug')
     delete_url = serializers.HyperlinkedIdentityField(view_name=NAMESPACE + ':delete', lookup_field='slug')
     author = serializers.SerializerMethodField(read_only=True)
-    image = serializers.ImageField(required=False)
-    image_url = serializers.SerializerMethodField()
+    image_file = serializers.ImageField(required=False)
+    favorited = serializers.SerializerMethodField()
+    favorites_count = serializers.SerializerMethodField()
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('author', 'image_url', 'update_url', 'delete_url')
+        fields = fields + ('author', 'favorited', 'favorites_count', 'image_file', 'update_url', 'delete_url')
+
+    def get_favorited(self, obj):
+        user = self.context['request'].user
+        return True if obj.is_favorited(user) > 0 else False
+
+    def get_favorites_count(self, obj):
+        return obj.is_favorited()
 
     def get_author(self, obj):
         try:
@@ -31,15 +39,12 @@ class ArticleSerializer(serializers.ModelSerializer):
         except:
             return {}
 
-    def get_image_url(self, obj):
-        return obj.image
-
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.body = validated_data.get('body', instance.body)
-        if validated_data.get('image'):
-            image = uploader(validated_data.get('image'))
+        if validated_data.get('image_file'):
+            image = uploader(validated_data.get('image_file'))
             instance.image = image.get('secure_url', instance.image)
 
         instance.save()
@@ -48,20 +53,23 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(required=False)
+    image_file = serializers.ImageField(required=False)
 
     class Meta:
         model = TABLE
 
-        fields = fields
+        fields = fields + ('image_file',)
 
     def create(self, validated_data):
+        image = None
+        if validated_data.get('image_file'):
+            image = uploader(validated_data.get('image_file'))
+            image = image.get('secure_url')
+            del validated_data['image_file']
         instance = TABLE.objects.create(**validated_data)
+        instance.image = image if image else None
+        instance.save()
         validated_data['slug'] = instance.slug
-
-        if validated_data.get('image'):
-            image = uploader(validated_data.get('image'))
-            instance.image = image.get('secure_url', instance.image)
-            instance.save()
+        validated_data['image'] = instance.image
         return validated_data
 

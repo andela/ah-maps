@@ -26,6 +26,7 @@ urlpatterns = [
     path('ahmaps/swagger/', swagger_view),
     path('', include(('authors.apps.profile.urls', 'profile'), namespace='profile')),
     path('api/article/', include(('authors.apps.article.api.urls', 'article_api'), namespace='article_api')),
+    path('api/favorite/', include(('authors.apps.favorite.api.urls', 'favorite_api'), namespace='favorite_api')),
     path('api/profile/', include(('authors.apps.profile.api.urls', 'profile_api'), namespace='profile_api')),
     path('admin/', admin.site.urls),
     path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),

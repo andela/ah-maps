@@ -7,7 +7,7 @@ from ...factories import ArticleFactory, UserFactory
 faker = Factory.create()
 
 
-class ModuleApiTest(TestCase):
+class ArticleApiTest(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.article = ArticleFactory()

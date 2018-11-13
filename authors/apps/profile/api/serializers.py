@@ -11,13 +11,11 @@ User = get_user_model()
 
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=False)
-    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('username', 'image_url')
+        fields = fields + ('username',)
 
     def get_username(self, obj):
         return obj.user.username
@@ -25,24 +23,20 @@ class ProfileListSerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         return obj.user.email
 
-    def get_image_url(self, obj):
-        return obj.image
-
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(required=False)
+    image_file = serializers.ImageField(required=False)
 
     class Meta:
         model = TABLE
 
-        fields = fields
+        fields = fields + ('image_file',)
 
     def update(self, instance, validated_data):
         instance.bio = validated_data.get('bio', instance.bio)
-        if validated_data.get('image'):
-            image = uploader(validated_data.get('image'))
-            if image:
-                instance.image = image.get('secure_url', instance.image)
+        if validated_data.get('image_file'):
+            image = uploader(validated_data.get('image_file'))
+            instance.image = image.get('secure_url') if image else instance.image
         instance.save()
 
         return instance
@@ -64,7 +58,7 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = TABLE
 
-        fields = ['username',]
+        fields = ['username', ]
 
     def create(self, validated_data):
         current_profile = self.context.get('request').user.profile
