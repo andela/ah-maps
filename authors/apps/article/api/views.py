@@ -11,6 +11,7 @@ from rest_framework.generics import (
 )
 from django.apps import apps
 from rest_framework.permissions import (
+<<<<<<< HEAD
     IsAuthenticatedOrReadOnly, IsAuthenticated
 )
 from rest_framework import serializers, status
@@ -18,6 +19,14 @@ from rest_framework.response import Response
 from .serializers import (TABLE, ArticleSerializer,
                           ArticleCreateSerializer, ListLikersArticleSerializer,
                           ListDislikersArticleSerializer)
+=======
+ IsAuthenticatedOrReadOnly,
+ IsAuthenticated
+)
+from rest_framework.response import Response
+from rest_framework import serializers, status
+from .serializers import TABLE, ArticleSerializer, ArticleCreateSerializer
+>>>>>>> feat(bookmarks): Bookmark articles for reading later
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 

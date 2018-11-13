@@ -54,6 +54,16 @@ class Article(models.Model):
         Profile, related_name='liked_articles', symmetrical=True)
     disliked_by = models.ManyToManyField(
         Profile, related_name='disliked_articles', symmetrical=True)
+    bookmarked_by = models.ManyToManyField(
+        Profile, related_name='my_bookmarks', symmetrical=True)
+
+    def bookmark_article(self, profile):
+        """Create a bookmark for a specific user."""
+        profile.my_bookmarks.add(self)
+
+    def unbookmark_article(self, profile):
+        """Destroy a bookmark."""
+        profile.my_bookmarks.remove(self)
 
     def like_article(self, profile):
         """Like an article."""

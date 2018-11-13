@@ -63,7 +63,8 @@ LOCAL_APPS = (
     'authors.apps.core',
     'authors.apps.profile',
     'authors.apps.article',
-    'authors.apps.rating'
+    'authors.apps.rating',
+    'authors.apps.bookmarks'
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS
@@ -191,10 +192,17 @@ REST_FRAMEWORK = {
 
 
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+<<<<<<< HEAD
 SOCIAL_AUTH_TWITTER_KEY = os.getenv('TWITTER_KEY')
 SOCIAL_AUTH_TWITTER_SECRET = os.getenv('TWITTER_SECRET')
 SOCIAL_AUTH_FACEBOOK_KEY = os.getenv('FACEBOOK_KEY')
 SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv('FACEBOOK_SECRET')
+=======
+SOCIAL_AUTH_TWITTER_KEY=os.getenv('TWITTER_KEY')
+SOCIAL_AUTH_TWITTER_SECRET=os.getenv('TWITTER_SECRET')
+SOCIAL_AUTH_FACEBOOK_KEY=os.getenv('FACEBOOK_KEY')
+SOCIAL_AUTH_FACEBOOK_SECRET=os.getenv('FACEBOOK_SECRET')
+>>>>>>> feat(bookmarks): Bookmark articles for reading later
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_TWITTER_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'fields': 'id,email,name'}
