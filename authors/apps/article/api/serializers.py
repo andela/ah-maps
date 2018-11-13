@@ -2,11 +2,13 @@
 
 from rest_framework import serializers
 from django.apps import apps
+from django.db.models import Avg
 from authors.apps.profile.api.serializers import ProfileListSerializer
 from ...core.upload import uploader
 
 TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
+Rating = apps.get_model('rating', 'Rating')
 
 NAMESPACE = 'article_api'
 fields = ('id', 'slug', 'image', 'title', 'description',
@@ -26,12 +28,17 @@ class ArticleSerializer(serializers.ModelSerializer):
     favorites_count = serializers.SerializerMethodField()
     liked_by = serializers.SerializerMethodField(read_only=True)
     disliked_by = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         """Metadata description."""
 
         model = TABLE
-        fields = fields + ('author', 'favorited', 'favorites_count', 'liked_by', 'disliked_by', 'image_file', 'update_url', 'delete_url')
+        fields = fields + (
+            'author', 'favorited',
+            'favorites_count', 'liked_by',
+            'disliked_by', 'image_file', 'rating',
+            'update_url', 'delete_url')
 
     def get_favorited(self, obj):
         user = self.context['request'].user
@@ -50,7 +57,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         data = obj.disliked_by.all().values_list('user__username', flat=True)
         return data
 
-
     def get_author(self, obj):
         """Get article author."""
         try:
@@ -60,6 +66,10 @@ class ArticleSerializer(serializers.ModelSerializer):
             return serializer.data
         except Profile.DoesNotExist:
             return {}
+    
+    def get_rating(self, obj):
+        average = Rating.objects.filter(article__pk=obj.pk).aggregate(Avg('your_rating'))
+        return average['your_rating__avg']
 
     def update(self, instance, validated_data):
         """Update article."""

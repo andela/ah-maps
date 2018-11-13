@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/article/', include(('authors.apps.article.api.urls', 'article_api'), namespace='article_api')),
     path('api/favorite/', include(('authors.apps.favorite.api.urls', 'favorite_api'), namespace='favorite_api')),
     path('api/profile/', include(('authors.apps.profile.api.urls', 'profile_api'), namespace='profile_api')),
+    path('api/rate/', include(('authors.apps.rating.api.urls', 'rate_api'), namespace='rating_api')),
     path('admin/', admin.site.urls),
     path('api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),
     path('oauth/', include('social_django.urls',  namespace='social')),
