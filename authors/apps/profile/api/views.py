@@ -139,11 +139,7 @@ class ListFollowersProfilesAPIView(RetrieveAPIView):
     serializer_class = ProfileFollowSerializer
 
     def get(self, request, username):
-<<<<<<< HEAD
         """Get followers."""
-=======
-        """get followers"""
->>>>>>> feat(bookmarks): Bookmark articles for reading later
         serializer = self.serializer_class(data={"username": username})
         serializer.is_valid(username)
         profile = get_profile(username)
