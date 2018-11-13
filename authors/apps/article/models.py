@@ -22,7 +22,6 @@ class Article(models.Model):
                          blank=True, null=True, unique=True)
     title = models.CharField(
         _('Article field', 'title'),
-        unique=True,
         max_length=128
     )
     description = models.TextField(
@@ -34,6 +33,12 @@ class Article(models.Model):
         _('Article Field', 'body'),
         blank=True,
         null=True
+    )
+    favorites = models.ManyToManyField(
+        get_user_model(),
+        related_name='user_favorites',
+        null=True,
+        blank=True
     )
     image = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(
@@ -82,3 +87,8 @@ class Article(models.Model):
     def __str__(self):
         """Print out as title."""
         return self.title
+
+    def is_favorited(self, user=None):
+        queryset = self.favorites.all()
+        queryset = queryset.filter(id=user.id) if user else queryset
+        return queryset.count()
