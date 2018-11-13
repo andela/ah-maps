@@ -1,10 +1,15 @@
+"""Define the article model."""
+
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
 from autoslug import AutoSlugField
+from authors.apps.profile.models import Profile
 
 
 class Article(models.Model):
+    """The article model."""
+
     user = models.ForeignKey(
         get_user_model(),
         related_name='author',
@@ -13,7 +18,8 @@ class Article(models.Model):
         blank=True,
         default=None
     )
-    slug = AutoSlugField(populate_from='title', blank=True, null=True, unique=True)
+    slug = AutoSlugField(populate_from='title',
+                         blank=True, null=True, unique=True)
     title = models.CharField(
         _('Article field', 'title'),
         unique=True,
@@ -39,9 +45,40 @@ class Article(models.Model):
         _('Article field', 'updated at'),
         auto_now=True
     )
+    liked_by = models.ManyToManyField(
+        Profile, related_name='liked_articles', symmetrical=True)
+    disliked_by = models.ManyToManyField(
+        Profile, related_name='disliked_articles', symmetrical=True)
+
+    def like_article(self, profile):
+        """Like an article."""
+        profile.liked_articles.add(self)
+
+    def dislike_article(self, profile):
+        """Dislike an article."""
+        profile.disliked_articles.add(self)
+
+    def get_likers(self):
+        """Get profiles that like the article."""
+        return self.liked_by.all()
+
+    def get_dislikers(self):
+        """Get profiles that dislike this article."""
+        return self.disliked_by.all()
+
+    def unlike_article(self, profile):
+        """Unlike an article."""
+        profile.liked_articles.remove(self)
+
+    def undislike_article(self, profile):
+        """Undislike an article."""
+        profile.disliked_articles.remove(self)
 
     class Meta:
+        """define metadata."""
+
         app_label = 'article'
 
     def __str__(self):
+        """Print out as title."""
         return self.title

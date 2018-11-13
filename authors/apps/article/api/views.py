@@ -1,15 +1,23 @@
+"""Articles api Views."""
+
 from django.db.models import Q
 from rest_framework import pagination
 from rest_framework.generics import (
-  ListAPIView, CreateAPIView,
-  RetrieveUpdateAPIView,
-  RetrieveAPIView,
-  DestroyAPIView
+    ListAPIView, CreateAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveAPIView,
+    DestroyAPIView,
+    RetrieveUpdateDestroyAPIView
 )
+from django.apps import apps
 from rest_framework.permissions import (
- IsAuthenticatedOrReadOnly
+    IsAuthenticatedOrReadOnly, IsAuthenticated
 )
-from .serializers import TABLE, ArticleSerializer, ArticleCreateSerializer
+from rest_framework import serializers, status
+from rest_framework.response import Response
+from .serializers import (TABLE, ArticleSerializer,
+                          ArticleCreateSerializer, ListLikersArticleSerializer,
+                          ListDislikersArticleSerializer)
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 
@@ -17,8 +25,25 @@ LOOKUP_FIELD = 'slug'
 PAGE_SIZE_KEY = 'page_size'
 SEARCH_QUERY_PARAMETER = 'q'
 
+Profile = apps.get_model('profile', 'Profile')
+
+
+def get_article(slug):
+    """Get an article from the provided slug."""
+    try:
+        article = TABLE.objects.get(slug=slug)
+        if not article:
+            raise serializers.ValidationError(
+                "Slug does not contain any matching article.")
+        return article
+    except TABLE.DoesNotExist:
+        raise serializers.ValidationError(
+            "Slug does not contain any matching article.")
+
 
 class ArticleListAPIView(ListAPIView):
+    """Artice list APIView."""
+
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ArticleSerializer
     pagination_class = PostLimitOffsetPagination
@@ -33,9 +58,9 @@ class ArticleListAPIView(ListAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(title__icontains=query) |
-                Q(slug__icontains=query) |
-                Q(description__icontains=query)
+                Q(title__icontains=query)
+                | Q(slug__icontains=query)
+                | Q(description__icontains=query)
             )
 
         return queryset_list.order_by('-id')
@@ -77,3 +102,112 @@ class ArticleUpdateAPIView(RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         """update an article"""
         serializer.save(user=self.request.user)
+
+
+class LikeArticleAPIView(RetrieveUpdateDestroyAPIView):
+    """Like article."""
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
+
+    def post(self, request, slug):
+        """Like an article."""
+        article = get_article(slug)
+        username = request.user.username
+        try:
+            article.disliked_by.get(user__username__exact=username)
+            # If it has been disliked before undislike it
+            article.undislike_article(request.user.profile)
+        except Profile.DoesNotExist:
+            pass
+        # Check if the article has been liked before
+        try:
+            article.liked_by.get(user__username__exact=username)
+            # If it has been liked before unlike it
+            article.unlike_article(request.user.profile)
+            message = {"success": "Like cancelled successfully."}
+            return Response(message, status=status.HTTP_200_OK)
+
+        except Profile.DoesNotExist:
+            # If it has not been liked before like it
+            article.like_article(request.user.profile)
+            message = {"success": "Article liked successfully."}
+            return Response(message, status=status.HTTP_200_OK)
+
+
+class DislikeArticleAPIView(RetrieveUpdateDestroyAPIView):
+    """Dislike article."""
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ArticleSerializer
+
+    def post(self, request, slug):
+        """Dislike an article."""
+        article = get_article(slug)
+        username = request.user.username
+        # Check if the article has been disliked before
+        try:
+            article.liked_by.get(user__username__exact=username)
+            # If it has been disliked before undislike it
+            article.unlike_article(request.user.profile)
+        except Profile.DoesNotExist:
+            pass
+
+        try:
+            article.disliked_by.get(user__username__exact=username)
+            # If it has been disliked before undislike it
+            article.undislike_article(request.user.profile)
+            message = {"success": "Dislike cancelled successfully."}
+            return Response(message, status=status.HTTP_200_OK)
+
+        except Profile.DoesNotExist:
+            # If it has not been disliked before dislike it
+            article.dislike_article(request.user.profile)
+            message = {"success": "Article disliked successfully."}
+            return Response(message, status=status.HTTP_200_OK)
+
+
+class ListLikersArticleAPIView(RetrieveAPIView):
+    """List users who like an article."""
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = ListLikersArticleSerializer
+    lookup_field = 'slug'
+
+    def get_queryset(self, *args, **kwargs):
+        """Overide get queryset."""
+        queryset_list = TABLE.objects.all()
+
+        query = self.request.GET.get('q')
+
+        if query:
+            queryset_list = queryset_list.filter(
+                Q(title__icontains=query)
+                | Q(slug__icontains=query)
+                | Q(description__icontains=query)
+            )
+
+        return queryset_list.order_by('-id')
+
+
+class ListDislikersArticleAPIView(RetrieveAPIView):
+    """List users who dislike an article."""
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = ListDislikersArticleSerializer
+    lookup_field = 'slug'
+
+    def get_queryset(self, *args, **kwargs):
+        """Overide get queryset."""
+        queryset_list = TABLE.objects.all()
+
+        query = self.request.GET.get('q')
+
+        if query:
+            queryset_list = queryset_list.filter(
+                Q(title__icontains=query)
+                | Q(slug__icontains=query)
+                | Q(description__icontains=query)
+            )
+
+        return queryset_list.order_by('-id')
