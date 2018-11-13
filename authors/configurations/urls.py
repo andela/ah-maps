@@ -33,7 +33,7 @@ urlpatterns = [
                                   'profile_api'), namespace='profile_api')),
     path('api/rate/', include(('authors.apps.rating.api.urls',
                                'rate_api'), namespace='rating_api')),
-    path('admin/', admin.site.urls),
+    path('api/articles/comment/', include(('authors.apps.comment.api.urls', 'comment_api'), namespace='comment_api')),
     path('api/', include(('authors.apps.authentication.urls',
                           'authentication'), namespace='authentication')),
     path('oauth/', include('social_django.urls',  namespace='social')),
