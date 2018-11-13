@@ -1,3 +1,5 @@
+"""Define the user__profile model."""
+
 from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
@@ -7,11 +9,16 @@ User = get_user_model()
 
 
 class ProfileManager(models.Manager):
+    """Define profile model properies."""
+
     def create_profile(self, **kwargs):
+        """Create a profile."""
         self.model.create(user=kwargs['instance'])
 
 
 class Profile(models.Model):
+    """The profile model columns."""
+
     user = models.OneToOneField(
         User,
         related_name='profile',
@@ -36,29 +43,33 @@ class Profile(models.Model):
     is_following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
     class Meta:
+        """Define the seerializer metadata."""
+
         app_label = 'profile'
 
     def __str__(self):
+        """Define the data print representation."""
         return self.user.username
 
     def follow(self, profile):
+        """Follow a profile."""
         self.is_following.add(profile)
 
     def unfollow(self, profile):
+        """Unfollow a profile."""
         self.is_following.remove(profile)
 
-    def get_followers(self, profile=None):
-        if profile:
-            return profile.followers.all().values_list('user__username', flat=True)
-        return self.followers.all().values_list('user__username', flat=True)
+    def get_followers(self, profile):
+        """Get a profile's followers."""
+        return profile.followers.all().values('user__username', 'image')
 
-    def following(self, profile=None):
-        if profile:
-            return profile.is_following.all().values_list('user__username', flat=True)
-        return self.is_following().all().values_list('user__username', flat=True)
+    def following(self, profile):
+        """Get a profiles following."""
+        return profile.is_following.all().values('user__username', 'image')
 
 
 def create_profile(sender, **kwargs):
+    """Create a profile."""
     if kwargs['created']:
         Profile.objects.create(user=kwargs['instance'])
 

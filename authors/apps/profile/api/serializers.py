@@ -10,18 +10,33 @@ User = get_user_model()
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
+    """List the profiles."""
     username = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
 
     class Meta:
-        model = TABLE
+        """Define the serializer META data."""
 
-        fields = fields + ('username',)
+        model = TABLE
+        fields = fields + ('username', 'following', 'followers',)
 
     def get_username(self, obj):
+        """Get users username."""
         return obj.user.username
 
     def get_email(self, obj):
         return obj.user.email
+
+    def get_following(self, obj):
+        """Get users following."""
+        data = obj.is_following.all().values('user__username', 'image')
+        return data
+
+    def get_followers(self, obj):
+        """Get users followers."""
+        data = obj.followers.all().values('user__username', 'image')
+        return data
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
@@ -43,6 +58,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class ProfileFollowSerializer(serializers.ModelSerializer):
+    """Profile following/unfollowing serializer."""
+
     username = serializers.RegexField(
         regex="^(?!.*\ )[A-Za-z\d\-\_][^\W_]+$",
         min_length=3,
@@ -56,30 +73,37 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Define the seerializer metadata."""
+
         model = TABLE
 
         fields = ['username', ]
 
     def create(self, validated_data):
+        """Follow a profile."""
+        # ensure username has not been followed before
         current_profile = self.context.get('request').user.profile
         is_following = current_profile.following(profile=current_profile)
-
+        username = validated_data.get('username')
         # ensure the user exists
         try:
-            user = User.objects.get(username=validated_data.get('username'))
+            User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError('User {} does not exists'.format(validated_data.get('username')))
+            raise serializers.ValidationError(
+                'User {} does not exists'.format(username))
 
         # ensure username has not been followed before
-        if validated_data.get('username', None) in is_following:
-            raise serializers.ValidationError('You cannot follow someone that you already follow.')
+        user = current_profile.is_following.filter(user__username__exact=username).values_list('user__username')
+        if user:
+            raise serializers.ValidationError(
+                'You are already following user {}.'.format(username))
 
         # ensure you don't follow yourself
         current_username = self.context.get('request').user.username
-        if current_username == validated_data.get('username'):
+        if current_username == username:
             raise serializers.ValidationError('You cannot follow yourself.')
 
         # follow
-        profile = TABLE.objects.get(user__username=validated_data.get('username'))
+        profile = TABLE.objects.get(user__username=username)
         current_profile.follow(profile)
         return current_profile
