@@ -12,7 +12,7 @@ class ArticleFactory(factory.DjangoModelFactory):
         model = Article
 
     user = factory.SubFactory(UserFactory)
-    title = faker.name()
+    title = factory.Sequence(lambda n: 'map-title%d' % n)
     description = faker.text()
     body = faker.text()
     slug = factory.Sequence(lambda n: 'map-slug%d' % n)
