@@ -7,6 +7,7 @@ TABLE = apps.get_model('profile', 'Profile')
 APP = 'profile_api'
 fields = ('image', 'bio',)
 User = get_user_model()
+# Readers = apps.get_model('read_stats', 'Readers')
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
@@ -14,12 +15,13 @@ class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     following = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
+    # read_articles = serializers.SerializerMethodField()
 
     class Meta:
         """Define the serializer META data."""
 
         model = TABLE
-        fields = fields + ('username', 'following', 'followers',)
+        fields = fields + ('username', 'following', 'followers', )
 
     def get_username(self, obj):
         """Get users username."""
@@ -38,6 +40,10 @@ class ProfileListSerializer(serializers.ModelSerializer):
         data = obj.followers.all().values('user__username', 'image')
         return data
 
+    # def get_read_articles(self, obj):
+    #     """Get all the articles I have read."""
+    #     return Readers.objects.filter(reader=obj).values('article__title', 'article__slug').distinct()
+
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     image_file = serializers.ImageField(required=False)
@@ -51,7 +57,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         instance.bio = validated_data.get('bio', instance.bio)
         if validated_data.get('image_file'):
             image = uploader(validated_data.get('image_file'))
-            instance.image = image.get('secure_url') if image else instance.image
+            instance.image = image.get(
+                'secure_url') if image else instance.image
         instance.save()
 
         return instance
@@ -93,7 +100,8 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
                 'User {} does not exists'.format(username))
 
         # ensure username has not been followed before
-        user = current_profile.is_following.filter(user__username__exact=username).values_list('user__username')
+        user = current_profile.is_following.filter(
+            user__username__exact=username).values_list('user__username')
         if user:
             raise serializers.ValidationError(
                 'You are already following user {}.'.format(username))

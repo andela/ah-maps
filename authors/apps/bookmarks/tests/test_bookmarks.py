@@ -11,7 +11,7 @@ faker = Factory.create()
 
 
 class BookmarksApiTest(TestCase):
-    """Setup bookmark tests."""
+    """Bookmark tests."""
 
     def setUp(self):
         """Set up bookmark tests."""

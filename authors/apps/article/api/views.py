@@ -21,6 +21,7 @@ from .serializers import (TABLE, ArticleSerializer,
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 
+
 LOOKUP_FIELD = 'slug'
 PAGE_SIZE_KEY = 'page_size'
 SEARCH_QUERY_PARAMETER = 'q'
@@ -39,6 +40,10 @@ def get_article(slug):
     except TABLE.DoesNotExist:
         raise serializers.ValidationError(
             "Slug does not contain any matching article.")
+
+# def read_article(profile, article):
+#     """Mark an article as read."""
+#     READERS.objects.save(article=article, reader=proflie)
 
 
 class ArticleListAPIView(ListAPIView):

@@ -39,4 +39,6 @@ urlpatterns = [
     path('oauth/', include('social_django.urls',  namespace='social')),
     path('api/bookmarks/', include(('authors.apps.bookmarks.api.urls',
                                     'bookmarks'), namespace='bookmark_api')),
+    path('api/read/', include(('authors.apps.read_stats.api.urls',
+                                    'read_stats'), namespace='read_stats_api')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
