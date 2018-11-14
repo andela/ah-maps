@@ -49,7 +49,6 @@ class ModuleApiTest(TestCase):
         response = self.client2.post(self.rate_article_url, self.rating_body, format='json')
 
         self.assertEqual(201, response.status_code)
-        self.assertEqual(response.json().get('article'), self.article_slug)
         self.assertEqual(response.json().get('average_rating'), self.article_rating)
         self.assertEqual(response.json().get('your_rating'), self.article_rating)
 
@@ -66,7 +65,6 @@ class ModuleApiTest(TestCase):
         get_rating = self.client2.get(self.rate_article_url)
 
         self.assertEqual(200, get_rating.status_code)
-        self.assertEqual(get_rating.json().get('article'), self.article_slug)
         self.assertEqual(get_rating.json().get('average_rating'), self.article_rating)
         self.assertEqual(get_rating.json().get('your_rating'), self.article_rating)
 

@@ -34,6 +34,8 @@ urlpatterns = [
     path('api/rate/', include(('authors.apps.rating.api.urls',
                                'rate_api'), namespace='rating_api')),
     path('api/articles/comment/', include(('authors.apps.comment.api.urls', 'comment_api'), namespace='comment_api')),
+    path('api/report/', include(('authors.apps.report.api.urls',
+                               'report_api'), namespace='report_api')),
     path('api/', include(('authors.apps.authentication.urls',
                           'authentication'), namespace='authentication')),
     path('oauth/', include('social_django.urls',  namespace='social')),

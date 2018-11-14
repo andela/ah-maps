@@ -33,7 +33,8 @@ class ModuleApiTest(TestCase):
         }
 
         self.report_body = {
-            'report' : "This article is abusive"
+            'category' : "Hate-speech",
+            'message' : "This article is abusive"
         }
 
         self.create_url = reverse('article_api:create')
@@ -66,8 +67,15 @@ class ModuleApiTest(TestCase):
         self.assertEqual(response.json().get('errors').get('author'), 'Sorry, you cannot report your own article')
 
     def test_cannot_report_missing_article(self):
-        self.rate_article_url = reverse('report_api:report', kwargs={'slug': 'this-slug-is-fake'})
-        response = self.client2.post(self.rate_article_url, self.report_body, format='json')
+        self.report_article_url = reverse('report_api:report', kwargs={'slug': 'this-slug-is-fake'})
+        response = self.client2.post(self.report_article_url, self.report_body, format='json')
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(response.json().get('errors').get('article'), 'Sorry, none of our articles has that slug')
+
+    def test_non_admin_user_cannot_view_all_reports(self):
+        self.report_article_url = reverse('report_api:list')
+        response = self.client2.get(self.report_article_url, self.report_body, format='json')
+
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(response.json().get('detail'), 'You do not have permission to perform this action.')

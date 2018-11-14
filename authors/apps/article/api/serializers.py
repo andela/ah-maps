@@ -4,6 +4,7 @@ from rest_framework import serializers
 from django.apps import apps
 from django.db.models import Avg
 from authors.apps.profile.api.serializers import ProfileListSerializer
+from authors.apps.report.api.serializers import ReportSerializer
 from ...core.upload import uploader
 import readtime
 
@@ -159,3 +160,17 @@ class ListDislikersArticleSerializer(serializers.ModelSerializer):
         data = obj.disliked_by.all().values(
             'user__username', 'image')
         return data
+
+class ReportedArticleSerializer(serializers.ModelSerializer):
+    """Show all reported articles and the report messages and categories"""
+
+    author = serializers.SerializerMethodField(read_only=True)
+    reports = ReportSerializer(many=True, read_only=True)
+
+    class Meta:
+
+        model = TABLE
+        fields = ('author', 'title', 'slug', 'reports',)
+
+    def get_author(self, obj):
+        return obj.user.username

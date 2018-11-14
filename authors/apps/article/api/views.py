@@ -11,13 +11,13 @@ from rest_framework.generics import (
 )
 from django.apps import apps
 from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, IsAuthenticated
+    IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser
 )
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from .serializers import (TABLE, ArticleSerializer,
                           ArticleCreateSerializer, ListLikersArticleSerializer,
-                          ListDislikersArticleSerializer)
+                          ListDislikersArticleSerializer, ReportedArticleSerializer)
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 
@@ -216,3 +216,12 @@ class ListDislikersArticleAPIView(RetrieveAPIView):
             )
 
         return queryset_list.order_by('-id')
+
+
+class ReportedArticleListAPIView(ListAPIView):
+    """Artice list APIView."""
+
+    permission_classes = [IsAdminUser]
+    serializer_class = ReportedArticleSerializer
+    queryset = TABLE.objects.filter(reports__isnull=False).distinct()
+
