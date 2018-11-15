@@ -578,11 +578,14 @@
                         
                         <td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
                         
-                            <h1 style="text-align:center;" >Reported Article Details</h1>
+							<h1 style="text-align:center; color:teal; margin-bottom: 2em;"  >Reported Article Details</h1>
+							
 
-<p>Reported by: {{ report_username }}</p>
+<p><h4 style="display:block; float:left; clear:none; margin-right:1em;">Reported by: </h4> {{ report_username }}</p>
 
-<p> Report message : {{ report_message }}</p>
+<p><h4 style="display:block; float:left; clear:none; margin-right:1em;">Category: </h4> {{ report_category }}</p>
+
+<p><h4 style="display:block; float:left; clear:none; margin-right:1em;">Message: </h4> {{ report_message }}</p>
 
 
                         </td>

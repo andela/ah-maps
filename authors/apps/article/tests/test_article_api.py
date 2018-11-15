@@ -20,6 +20,7 @@ class ArticleApiTest(TestCase):
             'title': faker.name(),
             'description': faker.text(),
             'body': faker.text(),
+            'tags': ["tags","test"]
         }
         self.create_url = reverse(self.namespace + ':create')
         self.list_url = reverse(self.namespace + ':list')
@@ -51,6 +52,16 @@ class ArticleApiTest(TestCase):
         response = self.client.get(
             self.list_url + '?q=' + self.article.slug[0])
         self.assertContains(response, self.article)
+
+    def test_list_article_custom_filters(self):
+        self.client.post(self.create_url, self.body, format='json')
+        response = self.client.get(
+            self.list_url + '?tag=' + self.body['tags'][0])
+        response2 = self.client.get(
+            self.list_url + '?author=' + self.user.username)
+        
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(200, response2.status_code)
 
     def test_listing_articles_api(self):
         response = self.client.get(self.list_url)

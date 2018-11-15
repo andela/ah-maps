@@ -12,13 +12,13 @@ from rest_framework.generics import (
 )
 from django.apps import apps
 from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, IsAuthenticated
+    IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser
 )
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from .serializers import (TABLE, ArticleSerializer,
                           ArticleCreateSerializer, ListLikersArticleSerializer,
-                          ListDislikersArticleSerializer)
+                          ListDislikersArticleSerializer, ReportedArticleSerializer)
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 from ...tags.api.views import ArticleTagsAPIView
@@ -27,6 +27,8 @@ from ...tags.api.views import ArticleTagsAPIView
 LOOKUP_FIELD = 'slug'
 PAGE_SIZE_KEY = 'page_size'
 SEARCH_QUERY_PARAMETER = 'q'
+SEARCH_BY_TAG = 'tag'
+SEARCH_BY_AUTHOR = 'author'
 
 Profile = apps.get_model('profile', 'Profile')
 TAG = apps.get_model('tags', 'Tag')
@@ -60,6 +62,8 @@ class ArticleListAPIView(ListAPIView):
 
         page_size = self.request.GET.get(PAGE_SIZE_KEY)
         query = self.request.GET.get(SEARCH_QUERY_PARAMETER)
+        tag = self.request.GET.get(SEARCH_BY_TAG)
+        author = self.request.GET.get(SEARCH_BY_AUTHOR)
         pagination.PageNumberPagination.page_size = page_size if page_size else 10
 
         if query:
@@ -67,6 +71,14 @@ class ArticleListAPIView(ListAPIView):
                 Q(title__icontains=query)
                 | Q(slug__icontains=query)
                 | Q(description__icontains=query)
+            )
+        if tag:
+            queryset_list = queryset_list.filter(
+                Q(tags__tag__icontains=tag)  
+            )
+        if author:
+             queryset_list = queryset_list.filter(
+                Q(user__username__icontains=author)  
             )
 
         return queryset_list.order_by('-id')
@@ -218,3 +230,12 @@ class ListDislikersArticleAPIView(RetrieveAPIView):
             )
 
         return queryset_list.order_by('-id')
+
+
+class ReportedArticleListAPIView(ListAPIView):
+    """Artice list APIView."""
+
+    permission_classes = [IsAdminUser]
+    serializer_class = ReportedArticleSerializer
+    queryset = TABLE.objects.filter(reports__isnull=False).distinct()
+
