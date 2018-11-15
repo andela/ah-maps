@@ -36,9 +36,6 @@ def get_article(slug):
     """Get an article from the provided slug."""
     try:
         article = TABLE.objects.get(slug=slug)
-        if not article:
-            raise serializers.ValidationError(
-                "Slug does not contain any matching article.")
         return article
     except TABLE.DoesNotExist:
         raise serializers.ValidationError(
@@ -52,12 +49,13 @@ def get_article(slug):
 class ArticleListAPIView(ListAPIView):
     """Artice list APIView."""
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     serializer_class = ArticleSerializer
     pagination_class = PostLimitOffsetPagination
 
     def get_queryset(self, *args, **kwargs):
         """get all articles"""
+        serializer = self.serializer_class(context={'requet': kwargs.get('request')})
         queryset_list = TABLE.objects.all()
 
         page_size = self.request.GET.get(PAGE_SIZE_KEY)
@@ -87,6 +85,7 @@ class ArticleCreateAPIView(CreateAPIView):
 
 class ArticleDetailAPIView(RetrieveAPIView):
     """check article details"""
+    permission_classes = [IsAuthenticated]
     queryset = TABLE.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = LOOKUP_FIELD

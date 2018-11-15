@@ -43,4 +43,6 @@ urlpatterns = [
                                     'bookmarks'), namespace='bookmark_api')),
     path('api/read/', include(('authors.apps.read_stats.api.urls',
                                     'read_stats'), namespace='read_stats_api')),
+    path('api/highlights/', include(('authors.apps.highlights.api.urls',
+                                    'highlights'), namespace='highlights_api')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

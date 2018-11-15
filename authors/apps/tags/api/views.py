@@ -24,7 +24,7 @@ class ArticleTagsAPIView(ListCreateAPIView, DestroyAPIView):
     queryset = TAG.objects.all()
     permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
 
-    def create(self, request, *args, **kwargs): 
+    def create(self, request, *args, **kwargs):
         """ Function to create a tag for an article
         """
         slug = kwargs['slug']
@@ -42,7 +42,7 @@ class ArticleTagsAPIView(ListCreateAPIView, DestroyAPIView):
             requested.is_valid(raise_exception=True)
 
             tags = requested.data.get('tags', []) #tags should be provided as a list
-            
+
             serializer = self.serializer_class(
                 many=True, data=[{
                     'tag': x
@@ -84,7 +84,7 @@ class ArticleTagsAPIView(ListCreateAPIView, DestroyAPIView):
 
             # delete the tags from the article specified
             for tag in tags:
-                deleted_tag = TAG.objects.get(tag=tag) #fetch the tag 
+                deleted_tag = TAG.objects.get(tag=tag) #fetch the tag
                 if deleted_tag:
                     article.tags.remove(deleted_tag) #remove the tag from the article
 
