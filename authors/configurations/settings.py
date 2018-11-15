@@ -26,6 +26,7 @@ SECRET_KEY = '7pgozr2jn7zs_o%i8id6=rddie!*0f0qy3$oy$(8231i^4*@u3'
 DEBUG = True
 
 COMPANY_EMAIL = 'mapandela@gmail.com'
+ADMIN_EMAIL = 'mapandela@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'mapandela@gmail.com'
@@ -67,6 +68,7 @@ LOCAL_APPS = (
     'authors.apps.bookmarks',
     'authors.apps.comment',
     'authors.apps.read_stats',
+    'authors.apps.report',
     'authors.apps.tags'
 )
 
