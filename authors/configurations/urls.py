@@ -27,6 +27,8 @@ urlpatterns = [
     path('', include(('authors.apps.profile.urls', 'profile'), namespace='profile')),
     path('api/article/', include(('authors.apps.article.api.urls',
                                   'article_api'), namespace='article_api')),
+    path('api/tag/', include(('authors.apps.tags.api.urls',
+                                  'tag_api'), namespace='tag_api')),
     path('api/favorite/', include(('authors.apps.favorite.api.urls',
                                    'favorite_api'), namespace='favorite_api')),
     path('api/profile/', include(('authors.apps.profile.api.urls',

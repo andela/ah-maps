@@ -6,12 +6,14 @@ from django.db.models import Avg
 from authors.apps.profile.api.serializers import ProfileListSerializer
 from authors.apps.report.api.serializers import ReportSerializer
 from ...core.upload import uploader
+from ...tags.api.relations import TagRelation
 import readtime
 
 TABLE = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
 Rating = apps.get_model('rating', 'Rating')
 Readers = apps.get_model('read_stats', 'Readers')
+TAG = apps.get_model('tags', 'Tag')
 
 NAMESPACE = 'article_api'
 fields = ('id', 'slug', 'image', 'title', 'description', 'body', 'user')
@@ -33,6 +35,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField(read_only=True)
     reading_time = serializers.SerializerMethodField(read_only=True)
     read_count = serializers.SerializerMethodField(read_only=True)
+    tags = TagRelation(many=True, required=False)
 
 
     class Meta:
@@ -43,7 +46,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author', 'favorited',
             'favorites_count', 'liked_by',
             'disliked_by', 'image_file', 'rating',
-            'update_url', 'delete_url', 'reading_time', 'read_count')
+            'update_url', 'delete_url', 'reading_time', 'read_count','tags',)
 
     def get_favorited(self, obj):
         """Get favourited."""
@@ -104,23 +107,46 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
     image_file = serializers.ImageField(required=False)
+    tags = TagRelation(many=True, required=False, allow_null=True, default=None)
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('image_file',)
+        fields = fields + ('image_file','tags',)
 
     def create(self, validated_data):
         image = None
+
+        if validated_data.get('tags'):
+
+            tags = validated_data.get('tags')
+            validated_data.pop('tags')
+            instance = TABLE.objects.create(**validated_data)
+            for tag in tags:
+                    t, created = TAG.objects.get_or_create(tag=tag)
+                    instance.tags.add(t)
+            validated_data['tags'] = instance.tags
+            validated_data['slug'] = instance.slug
+            return validated_data
+
+        else:
+            validated_data.pop('tags')
+            instance = TABLE.objects.create(**validated_data)
+
+        validated_data['tags'] = instance.tags
+        validated_data['slug'] = instance.slug
         if validated_data.get('image_file'):
             image = uploader(validated_data.get('image_file'))
             image = image.get('secure_url')
             del validated_data['image_file']
+
+        validated_data.pop('tags')
         instance = TABLE.objects.create(**validated_data)
         instance.image = image if image else None
         instance.save()
         validated_data['slug'] = instance.slug
         validated_data['image'] = instance.image
+        validated_data['tags'] = instance.tags
         return validated_data
 
 

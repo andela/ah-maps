@@ -1,6 +1,7 @@
 """Articles api Views."""
 
 from django.db.models import Q
+from django.apps import apps
 from rest_framework import pagination
 from rest_framework.generics import (
     ListAPIView, CreateAPIView,
@@ -20,6 +21,7 @@ from .serializers import (TABLE, ArticleSerializer,
                           ListDislikersArticleSerializer, ReportedArticleSerializer)
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
+from ...tags.api.views import ArticleTagsAPIView
 
 
 LOOKUP_FIELD = 'slug'
@@ -27,6 +29,7 @@ PAGE_SIZE_KEY = 'page_size'
 SEARCH_QUERY_PARAMETER = 'q'
 
 Profile = apps.get_model('profile', 'Profile')
+TAG = apps.get_model('tags', 'Tag')
 
 
 def get_article(slug):

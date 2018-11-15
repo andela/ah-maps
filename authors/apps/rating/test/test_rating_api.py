@@ -72,7 +72,6 @@ class ModuleApiTest(TestCase):
         get_rating2 = self.client3.get(self.rate_article_url)
 
         self.assertEqual(200, get_rating2.status_code)
-        self.assertEqual(get_rating2.json().get('article'), self.article_slug)
         self.assertEqual(get_rating2.json().get('average_rating'), self.article_rating)
         self.assertEqual(get_rating2.json().get('your_rating'), "Sorry, you can't see your rating because you are not logged in")
 
@@ -81,7 +80,6 @@ class ModuleApiTest(TestCase):
         get_rating = self.client2.get(self.rate_article_url)
 
         self.assertEqual(200, get_rating.status_code)
-        self.assertEqual(get_rating.json().get('article'), self.article_slug)
         self.assertEqual(get_rating.json().get('your_rating'), 'Sorry, you have not rated this article')
 
     def test_cannot_rate_own_article(self):

@@ -4,7 +4,11 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
 from autoslug import AutoSlugField
+
+from ..tags.models import Tag
 from authors.apps.profile.models import Profile
+
+
 
 
 class Article(models.Model):
@@ -18,8 +22,11 @@ class Article(models.Model):
         blank=True,
         default=None
     )
-    slug = AutoSlugField(populate_from='title',
-                         blank=True, null=True, unique=True)
+    slug = AutoSlugField(populate_from='title', blank=True, null=True, unique=True)
+    tags = models.ManyToManyField(
+        Tag,
+        related_name='tagged_articles',
+    )
     title = models.CharField(
         _('Article field', 'title'),
         max_length=128
