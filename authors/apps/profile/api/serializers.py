@@ -75,9 +75,7 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
             'invalid': 'Sorry, invalid username. No spaces or special characters allowed.',
             'required': 'Sorry, username is required.',
             'min_length': 'Sorry, username must have at least 3 characters.'
-        }
-
-    )
+        })
 
     class Meta:
         """Define the seerializer metadata."""

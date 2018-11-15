@@ -68,8 +68,9 @@ LOCAL_APPS = (
     'authors.apps.bookmarks',
     'authors.apps.comment',
     'authors.apps.read_stats',
+    'authors.apps.tags',
+    'authors.apps.highlights',
     'authors.apps.report',
-    'authors.apps.tags'
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS

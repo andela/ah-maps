@@ -14,6 +14,7 @@ Profile = apps.get_model('profile', 'Profile')
 Rating = apps.get_model('rating', 'Rating')
 Readers = apps.get_model('read_stats', 'Readers')
 TAG = apps.get_model('tags', 'Tag')
+Highlights = apps.get_model('highlights', 'Highlights')
 
 NAMESPACE = 'article_api'
 fields = ('id', 'slug', 'image', 'title', 'description', 'body', 'user')
@@ -34,6 +35,9 @@ class ArticleSerializer(serializers.ModelSerializer):
     disliked_by = serializers.SerializerMethodField(read_only=True)
     rating = serializers.SerializerMethodField(read_only=True)
     reading_time = serializers.SerializerMethodField(read_only=True)
+    like_count = serializers.SerializerMethodField(read_only=True)
+    dislike_count = serializers.SerializerMethodField(read_only=True)
+    my_highlights = serializers.SerializerMethodField(read_only=True)
     read_count = serializers.SerializerMethodField(read_only=True)
     tags = TagRelation(many=True, required=False)
 
@@ -46,7 +50,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author', 'favorited',
             'favorites_count', 'liked_by',
             'disliked_by', 'image_file', 'rating',
-            'update_url', 'delete_url', 'reading_time', 'read_count','tags',)
+            'update_url', 'delete_url', 'reading_time', 'like_count', 'dislike_count', 'my_highlights', 'read_count', 'tags',)
 
     def get_favorited(self, obj):
         """Get favourited."""
@@ -84,6 +88,20 @@ class ArticleSerializer(serializers.ModelSerializer):
             return serializer.data
         except Profile.DoesNotExist:
             return {}
+
+    def get_like_count(self, obj):
+        """Get the number of likes for the article."""
+        return obj.liked_by.all().count()
+
+    def get_dislike_count(self, obj):
+        """Get the dislike count for an article."""
+        return obj.disliked_by.all().count()
+
+    def get_my_highlights(self, obj):
+        """Get my highlights for this article."""
+        request = self.context.get('request')
+        return Highlights.objects.filter(article=obj, author=request.user.profile).values('highlight', 'comment', 'slug')
+
 
     def get_rating(self, obj):
         """Get article rating."""
