@@ -10,19 +10,8 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from authors.apps.article.api.serializers import TABLE
 from .serializers import BookMarkSerializer
+from authors.apps.article.api.views import get_article
 
-
-def get_article(slug):
-    """Get an article from the provided slug."""
-    try:
-        article = TABLE.objects.get(slug=slug)
-        if not article:
-            raise serializers.ValidationError(
-                "Slug does not contain any matching article.")
-        return article
-    except TABLE.DoesNotExist:
-        raise serializers.ValidationError(
-            "Slug does not contain any matching article.")
 
 
 class BookMarkListAPIView(ListAPIView):
@@ -58,7 +47,7 @@ class BookMarkArticleAPIView(RetrieveUpdateDestroyAPIView):
         article.bookmark_article(request.user.profile)
 
         message = {
-            "success": "Article {} bookmarked successfully".format(slug)}
+            "success": "Article {} bookmarked successfully".format(article.title)}
         return Response(message, status=status.HTTP_200_OK)
 
     def delete(self, request, slug):

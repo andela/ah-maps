@@ -99,6 +99,7 @@ class Article(models.Model):
         return self.title
 
     def is_favorited(self, user=None):
+        """Get favourited articles."""
         queryset = self.favorites.all()
         queryset = queryset.filter(id=user.id) if user else queryset
         return queryset.count()
