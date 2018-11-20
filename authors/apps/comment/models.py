@@ -1,8 +1,6 @@
 from django.db import models
-from django.db.models.signals import pre_save
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
-from django.utils.timezone import now
 from authors.apps.article.models import Article
 
 
@@ -48,8 +46,27 @@ class Comment(models.Model):
         _('Comment field', 'updated at'),
         auto_now=True
     )
-
+    likes = models.ManyToManyField(
+        get_user_model(),
+        related_name='comment_likes')
+    dislikes = models.ManyToManyField(
+        get_user_model(),
+        related_name='comment_dislikes')
 
     class Meta:
         app_label = 'comment'
 
+    def __str__(self):
+        return self.body
+
+    def get_likes(self, user=None):
+        """Get number of comment likes."""
+        queryset = self.likes.all()
+        queryset = queryset.filter(id=user.id) if user else queryset
+        return queryset.count()
+
+    def get_dislikes(self, user=None):
+        """Get number of comment dislikes."""
+        queryset = self.dislikes.all()
+        queryset = queryset.filter(id=user.id) if user else queryset
+        return queryset.count()

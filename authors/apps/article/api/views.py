@@ -1,7 +1,6 @@
 """Articles api Views."""
 
 from django.db.models import Q
-from django.apps import apps
 from rest_framework import pagination
 from rest_framework.generics import (
     ListAPIView, CreateAPIView,
@@ -21,7 +20,6 @@ from .serializers import (TABLE, ArticleSerializer,
                           ListDislikersArticleSerializer, ReportedArticleSerializer)
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
-from ...tags.api.views import ArticleTagsAPIView
 
 
 LOOKUP_FIELD = 'slug'
@@ -43,10 +41,6 @@ def get_article(slug):
         raise serializers.ValidationError(
             "Slug does not contain any matching article.")
 
-# def read_article(profile, article):
-#     """Mark an article as read."""
-#     READERS.objects.save(article=article, reader=proflie)
-
 
 class ArticleListAPIView(ListAPIView):
     """Artice list APIView."""
@@ -57,7 +51,7 @@ class ArticleListAPIView(ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         """get all articles"""
-        serializer = self.serializer_class(context={'requet': kwargs.get('request')})
+        self.serializer_class(context={'requet': kwargs.get('request')})
         queryset_list = TABLE.objects.all()
 
         page_size = self.request.GET.get(PAGE_SIZE_KEY)

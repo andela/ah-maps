@@ -34,6 +34,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class ThreadSerializer(serializers.ModelSerializer):
     def to_representation(self, value):
         comment_details = self.parent.parent.__class__(value, context=self.context)
@@ -43,14 +44,39 @@ class ThreadSerializer(serializers.ModelSerializer):
         model = TABLE
         fields = '__all__'
 
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     thread = ThreadSerializer(many=True, read_only=True)
     author = serializers.SerializerMethodField(read_only=True)
+    liked = serializers.SerializerMethodField(read_only=True)
+    likes_count = serializers.SerializerMethodField(read_only=True)
+    disliked = serializers.SerializerMethodField(read_only=True)
+    dislikes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('author',)
+        fields = fields + (
+            'author',
+            'liked',
+            'likes_count',
+            'disliked',
+            'dislikes_count',
+        )
+
+    def get_liked(self, obj):
+        user = self.context['request'].user
+        return True if obj.get_likes(user) > 0 else False
+
+    def get_likes_count(self, obj):
+        return obj.get_likes()
+
+    def get_disliked(self, obj):
+        user = self.context['request'].user
+        return True if obj.get_dislikes(user) > 0 else False
+
+    def get_dislikes_count(self, obj):
+        return obj.get_dislikes()
 
     def get_author(self, obj):
         try:
@@ -69,6 +95,4 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         else:
             TABLE.objects.create(**validated_data)
             return validated_data
-
-        
 
