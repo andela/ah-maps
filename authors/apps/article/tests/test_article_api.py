@@ -108,7 +108,20 @@ class ArticleApiTest(TestCase):
     def test_get_dislikers(self):
         res = self.client.get(self.dislikers_url)
         self.assertEqual(200, res.status_code)
+
     def test_reading_time_of_article(self):
         response = self.client.get(self.retrieve_url)
         self.assertEqual(response.json().get('reading_time'), '1 min read')
+    
+    def test_social_media_sharing_links(self):
+        response = self.client.get(self.retrieve_url)
+        self.assertIn('http://www.facebook.com/sharer.php?u=', response.json().get('facebook'))
+        self.assertIn('https://twitter.com/share?url=', response.json().get('twitter'))
+        self.assertIn('http://www.linkedin.com/shareArticle?url=', response.json().get('Linkedin'))
+        self.assertIn('http://www.linkedin.com/shareArticle?url=', response.json().get('Linkedin'))
+        self.assertIn('mailto:?subject=Checkout this great read', response.json().get('mail'))
+
+
+
+
         
