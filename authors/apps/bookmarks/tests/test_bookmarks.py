@@ -19,7 +19,6 @@ class BookmarksApiTest(TestCase):
         self.profile = ProfileFactory()
         self.article = ArticleFactory()
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user.token)
         self.namespace = 'bookmark_api'
         self.bookmark_url = reverse(

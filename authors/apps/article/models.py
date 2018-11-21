@@ -9,8 +9,6 @@ from ..tags.models import Tag
 from authors.apps.profile.models import Profile
 
 
-
-
 class Article(models.Model):
     """The article model."""
 

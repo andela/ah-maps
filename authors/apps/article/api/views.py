@@ -22,6 +22,8 @@ from .serializers import (TABLE, ArticleSerializer,
 from ...core.permissions import IsOwnerOrReadOnly
 from ...core.pagination import PostLimitOffsetPagination
 from ...tags.api.views import ArticleTagsAPIView
+from authors.apps.notifications.api.views import (
+    notify_liked_article,)
 
 
 LOOKUP_FIELD = 'slug'
@@ -43,21 +45,18 @@ def get_article(slug):
         raise serializers.ValidationError(
             "Slug does not contain any matching article.")
 
-# def read_article(profile, article):
-#     """Mark an article as read."""
-#     READERS.objects.save(article=article, reader=proflie)
-
 
 class ArticleListAPIView(ListAPIView):
     """Artice list APIView."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ArticleSerializer
     pagination_class = PostLimitOffsetPagination
 
     def get_queryset(self, *args, **kwargs):
         """get all articles"""
-        serializer = self.serializer_class(context={'requet': kwargs.get('request')})
+        serializer = self.serializer_class(
+            context={'requet': kwargs.get('request')})
         queryset_list = TABLE.objects.all()
 
         page_size = self.request.GET.get(PAGE_SIZE_KEY)
@@ -68,35 +67,37 @@ class ArticleListAPIView(ListAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(title__icontains=query)
-                | Q(slug__icontains=query)
-                | Q(description__icontains=query)
+                Q(title__icontains=query) |
+                Q(slug__icontains=query) |
+                Q(description__icontains=query)
             )
         if tag:
             queryset_list = queryset_list.filter(
-                Q(tags__tag__icontains=tag)  
+                Q(tags__tag__icontains=tag)
             )
         if author:
-             queryset_list = queryset_list.filter(
-                Q(user__username__icontains=author)  
+            queryset_list = queryset_list.filter(
+                Q(user__username__icontains=author)
             )
 
         return queryset_list.order_by('-id')
 
 
 class ArticleCreateAPIView(CreateAPIView):
-    """create article"""
+    """Create article."""
+
     serializer_class = ArticleCreateSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = TABLE.objects.all()
 
     def perform_create(self, serializer):
-        """create article"""
+        """Create article."""
         serializer.save(user=self.request.user)
 
 
 class ArticleDetailAPIView(RetrieveAPIView):
-    """check article details"""
+    """Check article details."""
+
     permission_classes = [IsAuthenticated]
     queryset = TABLE.objects.all()
     serializer_class = ArticleSerializer
@@ -104,7 +105,8 @@ class ArticleDetailAPIView(RetrieveAPIView):
 
 
 class ArticleDeleteAPIView(DestroyAPIView):
-    """delete an article"""
+    """Delete an article."""
+
     queryset = TABLE.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     serializer_class = ArticleSerializer
@@ -112,14 +114,15 @@ class ArticleDeleteAPIView(DestroyAPIView):
 
 
 class ArticleUpdateAPIView(RetrieveUpdateAPIView):
-    """update an article"""
+    """Update an article."""
+
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = TABLE.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = LOOKUP_FIELD
 
     def perform_update(self, serializer):
-        """update an article"""
+        """Update an article."""
         serializer.save(user=self.request.user)
 
 
@@ -150,6 +153,8 @@ class LikeArticleAPIView(RetrieveUpdateDestroyAPIView):
         except Profile.DoesNotExist:
             # If it has not been liked before like it
             article.like_article(request.user.profile)
+            notify_liked_article(
+                article=article, liked_by=request.user.profile, request=request)
             message = {"success": "Article liked successfully."}
             return Response(message, status=status.HTTP_200_OK)
 
@@ -201,9 +206,9 @@ class ListLikersArticleAPIView(RetrieveAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(title__icontains=query)
-                | Q(slug__icontains=query)
-                | Q(description__icontains=query)
+                Q(title__icontains=query) |
+                Q(slug__icontains=query) |
+                Q(description__icontains=query)
             )
 
         return queryset_list.order_by('-id')
@@ -224,9 +229,9 @@ class ListDislikersArticleAPIView(RetrieveAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(title__icontains=query)
-                | Q(slug__icontains=query)
-                | Q(description__icontains=query)
+                Q(title__icontains=query) |
+                Q(slug__icontains=query) |
+                Q(description__icontains=query)
             )
 
         return queryset_list.order_by('-id')
@@ -238,4 +243,3 @@ class ReportedArticleListAPIView(ListAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = ReportedArticleSerializer
     queryset = TABLE.objects.filter(reports__isnull=False).distinct()
-
