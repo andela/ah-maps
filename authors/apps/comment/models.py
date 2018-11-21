@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import pgettext_lazy as _
 from django.contrib.auth import get_user_model
 from authors.apps.article.models import Article
+from django.db.models.signals import post_save
 
 
 class Comment(models.Model):
@@ -70,3 +71,37 @@ class Comment(models.Model):
         queryset = self.dislikes.all()
         queryset = queryset.filter(id=user.id) if user else queryset
         return queryset.count()
+
+
+class CommentHistory(models.Model):
+    """Model for comment history."""
+
+    body = models.CharField(max_length=200, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    comment = models.ForeignKey(
+        Comment,
+        null=False,
+        blank=False,
+        related_name='history',
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.body
+
+    class Meta:
+        ordering = ('created_at',)
+        app_label = 'comment'
+
+
+def create_history(sender, **kwargs):
+    """Create a comment history."""
+    comment = kwargs.get('instance')
+    if comment:
+        instance = CommentHistory()
+        instance.body = comment.body
+        instance.comment = comment
+        instance.save()
+
+
+post_save.connect(create_history, sender=Comment)

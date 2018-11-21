@@ -1,14 +1,20 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 from django.apps import apps
 from authors.apps.profile.api.serializers import ProfileListSerializer
-from authors.apps.article.api.serializers import ArticleSerializer
 
 TABLE = apps.get_model('comment', 'Comment')
+CommentHistory = apps.get_model('comment', 'CommentHistory')
 Article = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
 
 NAMESPACE = 'comment_api'
 fields = ('id', 'body', 'user', 'thread',)
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentHistory
+        fields = ('body', 'created_at')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -47,6 +53,7 @@ class ThreadSerializer(serializers.ModelSerializer):
 
 class CommentCreateSerializer(serializers.ModelSerializer):
     thread = ThreadSerializer(many=True, read_only=True)
+    history = CommentHistorySerializer(read_only=True, many=True)
     author = serializers.SerializerMethodField(read_only=True)
     liked = serializers.SerializerMethodField(read_only=True)
     likes_count = serializers.SerializerMethodField(read_only=True)
@@ -62,6 +69,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             'likes_count',
             'disliked',
             'dislikes_count',
+            'history',
         )
 
     def get_liked(self, obj):
