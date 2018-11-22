@@ -25,6 +25,11 @@ swagger_view = get_swagger_view(title='ah-maps-API')
 urlpatterns = [
     path('ahmaps/swagger/', swagger_view),
     path('', include(('authors.apps.profile.urls', 'profile'), namespace='profile')),
+    path(
+        'api/comment/',
+        include(('authors.apps.comment_like.api.urls', 'comment_like_api'),
+                namespace='comment_like_api')
+    ),
     path('api/article/', include(('authors.apps.article.api.urls',
                                   'article_api'), namespace='article_api')),
     path('api/tag/', include(('authors.apps.tags.api.urls',

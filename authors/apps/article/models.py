@@ -9,8 +9,6 @@ from ..tags.models import Tag
 from authors.apps.profile.models import Profile
 
 
-
-
 class Article(models.Model):
     """The article model."""
 
@@ -44,7 +42,6 @@ class Article(models.Model):
     favorites = models.ManyToManyField(
         get_user_model(),
         related_name='user_favorites',
-        null=True,
         blank=True
     )
     image = models.URLField(blank=True, null=True)

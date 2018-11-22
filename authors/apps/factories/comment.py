@@ -6,6 +6,7 @@ from . import UserFactory, ArticleFactory
 Comment = apps.get_model('comment', 'Comment')
 faker = Factory.create()
 
+
 class CommentFactory(factory.DjangoModelFactory):
     class Meta:
         model = Comment
@@ -13,4 +14,3 @@ class CommentFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     article = factory.SubFactory(ArticleFactory)
     body = faker.text()
-    
