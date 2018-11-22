@@ -3,10 +3,12 @@
 from rest_framework import serializers
 from django.apps import apps
 from django.db.models import Avg
+from django.contrib.auth.models import AnonymousUser
 from authors.apps.profile.api.serializers import ProfileListSerializer
 from authors.apps.report.api.serializers import ReportSerializer
 from ...core.upload import uploader
 from ...tags.api.relations import TagRelation
+from authors.apps.notifications.api.views import notify_followed_user_posts_article
 import readtime
 
 TABLE = apps.get_model('article', 'Article')
@@ -44,7 +46,6 @@ class ArticleSerializer(serializers.ModelSerializer):
     twitter= serializers.SerializerMethodField(read_only=True)
     Linkedin= serializers.SerializerMethodField(read_only=True)
     mail= serializers.SerializerMethodField(read_only=True)
-
 
     class Meta:
         """Metadata description."""
@@ -106,12 +107,14 @@ class ArticleSerializer(serializers.ModelSerializer):
     def get_my_highlights(self, obj):
         """Get my highlights for this article."""
         request = self.context.get('request')
+        if isinstance(request.user, AnonymousUser):
+            return []
         return Highlights.objects.filter(article=obj, author=request.user.profile).values('highlight', 'comment', 'slug')
-
 
     def get_rating(self, obj):
         """Get article rating."""
-        average = Rating.objects.filter(article__pk=obj.pk).aggregate(Avg('your_rating'))
+        average = Rating.objects.filter(
+            article__pk=obj.pk).aggregate(Avg('your_rating'))
         return average['your_rating__avg']
 
     def update(self, instance, validated_data):
@@ -147,24 +150,25 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
     image_file = serializers.ImageField(required=False)
-    tags = TagRelation(many=True, required=False, allow_null=True, default=None)
+    tags = TagRelation(many=True, required=False,
+                       allow_null=True, default=None)
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('image_file','tags',)
+        fields = fields + ('image_file', 'tags',)
 
     def create(self, validated_data):
         image = None
-
+        request = self.context.get('request')
         if validated_data.get('tags'):
 
             tags = validated_data.get('tags')
             validated_data.pop('tags')
             instance = TABLE.objects.create(**validated_data)
             for tag in tags:
-                    t, created = TAG.objects.get_or_create(tag=tag)
-                    instance.tags.add(t)
+                t, created = TAG.objects.get_or_create(tag=tag)
+                instance.tags.add(t)
             validated_data['tags'] = instance.tags
             validated_data['slug'] = instance.slug
             return validated_data
@@ -182,6 +186,9 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop('tags')
         instance = TABLE.objects.create(**validated_data)
+        for profile in request.user.profile.followers.all():
+            notify_followed_user_posts_article(
+                article=instance, follower=profile, request=request)
         instance.image = image if image else None
         instance.save()
         validated_data['slug'] = instance.slug
@@ -193,7 +200,6 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 class ListLikersArticleSerializer(serializers.ModelSerializer):
     """List likers serializer."""
 
-    # image = serializers.SerializerMethodField(read_only=True)
     liked_by = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -226,6 +232,7 @@ class ListDislikersArticleSerializer(serializers.ModelSerializer):
         data = obj.disliked_by.all().values(
             'user__username', 'image')
         return data
+
 
 class ReportedArticleSerializer(serializers.ModelSerializer):
     """Show all reported articles and the report messages and categories"""

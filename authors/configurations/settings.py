@@ -71,6 +71,7 @@ LOCAL_APPS = (
     'authors.apps.tags',
     'authors.apps.highlights',
     'authors.apps.report',
+    'authors.apps.notifications'
 )
 
 INSTALLED_APPS = DEFAULT_APPS + EXTERNAL_APPS + LOCAL_APPS

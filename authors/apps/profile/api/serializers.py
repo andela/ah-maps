@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from ...core.upload import uploader
+from authors.apps.notifications.api.views import notify_followed_by
 
 TABLE = apps.get_model('profile', 'Profile')
 APP = 'profile_api'
@@ -112,4 +113,7 @@ class ProfileFollowSerializer(serializers.ModelSerializer):
         # follow
         profile = TABLE.objects.get(user__username=username)
         current_profile.follow(profile)
+
+        notify_followed_by(follower=current_profile,
+                           followed=profile, request=self.context.get('request'))
         return current_profile

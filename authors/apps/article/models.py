@@ -7,7 +7,6 @@ from autoslug import AutoSlugField
 
 from ..tags.models import Tag
 from authors.apps.profile.models import Profile
-
 from rest_framework.reverse import reverse as api_reverse
 
 class Article(models.Model):

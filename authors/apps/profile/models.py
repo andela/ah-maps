@@ -41,6 +41,7 @@ class Profile(models.Model):
         auto_now=True
     )
     is_following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
+    subscribed = models.BooleanField(default=True)
 
     class Meta:
         """Define the seerializer metadata."""

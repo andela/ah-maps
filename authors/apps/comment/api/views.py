@@ -1,17 +1,18 @@
 from django.db.models import Q
 from rest_framework.generics import (
-  ListAPIView, CreateAPIView,
-  RetrieveUpdateAPIView,
-  RetrieveAPIView,
-  DestroyAPIView
+    ListAPIView, CreateAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveAPIView,
+    DestroyAPIView
 )
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import (
- IsAuthenticatedOrReadOnly
+    IsAuthenticatedOrReadOnly
 )
 from .serializers import TABLE, CommentSerializer, CommentCreateSerializer, Article
 from ...core.permissions import IsOwnerOrReadOnly
+from authors.apps.notifications.api.views import notify_activity_on_favorited_article, notify_article_commented
 
 LOOKUP_FIELD = 'pk'
 
@@ -29,34 +30,42 @@ class CommentListAPIView(ListAPIView):
 
         if query:
             queryset_list = queryset_list.filter(
-                Q(body__icontains=query) 
+                Q(body__icontains=query)
             )
 
         return queryset_list.order_by('-id')
 
 
 class CommentCreateAPIView(RetrieveUpdateAPIView, CreateAPIView):
-    """ create a comment."""
+    """Create a comment."""
+
     serializer_class = CommentCreateSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = TABLE.objects.all()
     lookup_field = 'slug'
 
     def post(self, request, slug):
-        """create a comment."""
+        """Create a comment."""
         article = Article.objects.get(slug=slug)
-        serializer = CommentCreateSerializer(data={"article":article,"body":request.data.get('body')})
+        serializer = CommentCreateSerializer(
+            data={"article": article, "body": request.data.get('body')})
         if serializer.is_valid():
-            data = serializer.save(body=request.data.get('body'), user=self.request.user, article=article)
+            data = serializer.save(body=request.data.get(
+                'body'), user=self.request.user, article=article)
             username = data.get('user').username
             slug = article.slug
             comment_id = TABLE.objects.last().id
-            data = {"article": slug, "author": username, "comment": request.data.get('body'), "id" : comment_id}
+            data = {"article": slug, "author": username,
+                    "comment": request.data.get('body'), "id": comment_id}
             message = {"comment": data}
+            notify_article_commented(
+                article=article, comment_by=request.user.profile, request=request)
+            for profile in article.favorites.all():
+                notify_activity_on_favorited_article(
+                    article=article, comment_by=request.user.profile, favorited_by=profile, request=request)
             return Response(message, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'invalid data'}, status=status.HTTP_200_OK)
-
 
 
 class CommentDetailAPIView(RetrieveAPIView):
@@ -64,6 +73,7 @@ class CommentDetailAPIView(RetrieveAPIView):
     queryset = TABLE.objects.all()
     serializer_class = CommentSerializer
     lookup_field = 'pk'
+
 
 class CommentDeleteAPIView(DestroyAPIView):
     """delete a comment."""

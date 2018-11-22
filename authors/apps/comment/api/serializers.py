@@ -103,4 +103,3 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         else:
             TABLE.objects.create(**validated_data)
             return validated_data
-
