@@ -1,7 +1,6 @@
 """Articles api Views."""
 
 from django.db.models import Q
-from django.apps import apps
 from rest_framework import pagination
 from rest_framework.generics import (
     ListAPIView, CreateAPIView,
@@ -24,6 +23,7 @@ from ...core.pagination import PostLimitOffsetPagination
 from ...tags.api.views import ArticleTagsAPIView
 from authors.apps.notifications.api.views import (
     notify_liked_article,)
+
 
 
 LOOKUP_FIELD = 'slug'

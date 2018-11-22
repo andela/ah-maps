@@ -42,6 +42,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     my_highlights = serializers.SerializerMethodField(read_only=True)
     read_count = serializers.SerializerMethodField(read_only=True)
     tags = TagRelation(many=True, required=False)
+    facebook = serializers.SerializerMethodField(read_only=True)
+    twitter= serializers.SerializerMethodField(read_only=True)
+    Linkedin= serializers.SerializerMethodField(read_only=True)
+    mail= serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         """Metadata description."""
@@ -51,13 +55,15 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author', 'favorited',
             'favorites_count', 'liked_by',
             'disliked_by', 'image_file', 'rating',
-            'update_url', 'delete_url', 'reading_time', 'like_count', 'dislike_count', 'my_highlights', 'read_count', 'tags',)
+            'update_url', 'delete_url', 'reading_time', 'like_count',
+            'dislike_count', 'my_highlights', 'read_count', 'tags',
+            'facebook', 'twitter', 'Linkedin', 'mail')
 
     def get_favorited(self, obj):
         """Get favourited."""
         user = self.context['request'].user
         return True if obj.is_favorited(user) > 0 else False
-
+               
     def get_favorites_count(self, obj):
         """Get favourited count."""
         return obj.is_favorited()
@@ -124,6 +130,22 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def get_facebook(self,obj):
+        request = self.context.get("request")
+        return 'http://www.facebook.com/sharer.php?u='+obj.article_url(request=request)
+
+    def get_twitter(self,obj):
+        request = self.context.get("request")
+        return 'https://twitter.com/share?url='+obj.article_url(request=request)+'&amp;text=Checkout this great read: '
+
+    def get_Linkedin(self,obj):
+        request = self.context.get("request")
+        return 'http://www.linkedin.com/shareArticle?url='+obj.article_url(request=request)+ '&title=Checkout this great read: '
+
+    def get_mail(self,obj):
+        request = self.context.get("request")
+        return  'mailto:?subject=Checkout this great read&body={}'.format(obj.article_url(request=request))
 
 
 class ArticleCreateSerializer(serializers.ModelSerializer):

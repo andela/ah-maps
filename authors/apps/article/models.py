@@ -7,7 +7,7 @@ from autoslug import AutoSlugField
 
 from ..tags.models import Tag
 from authors.apps.profile.models import Profile
-
+from rest_framework.reverse import reverse as api_reverse
 
 class Article(models.Model):
     """The article model."""
@@ -42,7 +42,6 @@ class Article(models.Model):
     favorites = models.ManyToManyField(
         get_user_model(),
         related_name='user_favorites',
-        null=True,
         blank=True
     )
     image = models.URLField(blank=True, null=True)
@@ -102,6 +101,9 @@ class Article(models.Model):
     def __str__(self):
         """Print out as title."""
         return self.title
+
+    def article_url(self,request=None):
+        return api_reverse("article_api:detail",kwargs={'slug':self.slug},request=request)
 
     def is_favorited(self, user=None):
         """Get favourited articles."""

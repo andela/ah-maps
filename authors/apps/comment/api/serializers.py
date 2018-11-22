@@ -1,14 +1,20 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 from django.apps import apps
 from authors.apps.profile.api.serializers import ProfileListSerializer
-from authors.apps.article.api.serializers import ArticleSerializer
 
 TABLE = apps.get_model('comment', 'Comment')
+CommentHistory = apps.get_model('comment', 'CommentHistory')
 Article = apps.get_model('article', 'Article')
 Profile = apps.get_model('profile', 'Profile')
 
 NAMESPACE = 'comment_api'
 fields = ('id', 'body', 'user', 'thread',)
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentHistory
+        fields = ('body', 'created_at')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -34,6 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class ThreadSerializer(serializers.ModelSerializer):
     def to_representation(self, value):
         comment_details = self.parent.parent.__class__(value, context=self.context)
@@ -43,14 +50,41 @@ class ThreadSerializer(serializers.ModelSerializer):
         model = TABLE
         fields = '__all__'
 
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     thread = ThreadSerializer(many=True, read_only=True)
+    history = CommentHistorySerializer(read_only=True, many=True)
     author = serializers.SerializerMethodField(read_only=True)
+    liked = serializers.SerializerMethodField(read_only=True)
+    likes_count = serializers.SerializerMethodField(read_only=True)
+    disliked = serializers.SerializerMethodField(read_only=True)
+    dislikes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TABLE
 
-        fields = fields + ('author',)
+        fields = fields + (
+            'author',
+            'liked',
+            'likes_count',
+            'disliked',
+            'dislikes_count',
+            'history',
+        )
+
+    def get_liked(self, obj):
+        user = self.context['request'].user
+        return True if obj.get_likes(user) > 0 else False
+
+    def get_likes_count(self, obj):
+        return obj.get_likes()
+
+    def get_disliked(self, obj):
+        user = self.context['request'].user
+        return True if obj.get_dislikes(user) > 0 else False
+
+    def get_dislikes_count(self, obj):
+        return obj.get_dislikes()
 
     def get_author(self, obj):
         try:

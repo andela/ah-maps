@@ -4,6 +4,7 @@ from ...factories import CommentFactory
 
 Comment = apps.get_model('comment', 'Comment')
 
+
 class CommentModelTest(TestCase):
     def setUp(self):
         self.data = {
