@@ -36,8 +36,10 @@ EMAIL_USE_TLS = True
 
 ALLOWED_HOSTS = [
     'ah-map-staging.herokuapp.com',
+    'ah-maps-frontend-staging.herokuapp.com',
     'test-twitter-api-mirrow.herokuapp.com',
     '127.0.0.1',
+    'localhost',
 ]
 
 # Application definition
@@ -180,7 +182,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:4000',
     'localhost:4000',
+    'localhost:3000',
 )
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Tell Django about the custom `User` model we created. The string
 # `authentication.User` tells Django we are referring to the `User` model in
