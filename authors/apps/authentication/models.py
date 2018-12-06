@@ -50,7 +50,7 @@ class UserManager(BaseUserManager):
     def reset_password_email(self, email, token, request):
         protocol = 'https://' if request.is_secure() else 'http://'
         current_site = get_current_site(request)
-        reset_url = protocol + current_site.domain + reverse('authentication:updateuser', kwargs={'token': token})
+        reset_url = 'https://ah-maps-frontend-staging.herokuapp.com/reset-password/'  + token 
         message = "Please click  <a href='" + reset_url + "'>this</a> link to reset your password. If the link doesn't work copy this to your browser:" + reset_url
         send_mail("Reset Authors'Haven Password", message, settings.COMPANY_EMAIL, [email], fail_silently=True,  html_message=message)
         return True
