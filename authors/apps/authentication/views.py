@@ -15,13 +15,14 @@ from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer,SocialSignUpSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, SocialSignUpSerializer
 )
 from django.contrib.auth.hashers import check_password
 
 from .models import User
 
 auth = JWTAuthentication()
+
 
 class RegistrationAPIView(CreateAPIView):
     """register a user """
@@ -33,14 +34,16 @@ class RegistrationAPIView(CreateAPIView):
     def post(self, request):
         request.data['username'] = request.data['username'].lower()
         user = request.data
- 
+
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user, context={'request': request})
+        serializer = self.serializer_class(
+            data=user, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        success_message = {"success" : "Please check your email for a link to complete your registration"}
+        success_message = {
+            "success": "Please check your email for a link to complete your registration"}
         return Response(success_message, status=status.HTTP_201_CREATED)
 
 
@@ -107,6 +110,7 @@ class ActivateAPIView(RetrieveAPIView):
         message = {"message": "Your account has been activated successfully"}
         return Response(message, status=status.HTTP_200_OK)
 
+
 class ResendActivationEmailAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -125,7 +129,8 @@ class ResendActivationEmailAPIView(CreateAPIView):
         user = serializer.get_user(email=email)
         token = user.token
         serializer.resend_confirmation_email(email, token, request)
-        message = {"message": "Success, an activation link has been re-sent to your email."}
+        message = {
+            "message": "Success, an activation link has been re-sent to your email."}
         return Response(message, status=status.HTTP_200_OK)
 
 
@@ -167,7 +172,8 @@ class UpdateUserAPIView(RetrieveUpdateAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(password)
         if check_password(password, user[0].password):
-            message = {"message": "Your new password can't be the same as your old password"}
+            message = {
+                "message": "Your new password can't be the same as your old password"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
         user[0].set_password(password)
         user[0].save()
@@ -180,26 +186,25 @@ class SocialSignUp(CreateAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = SocialSignUpSerializer
 
-
     def post(self, request, *args, **kwargs):
         """ interrupt social_auth authentication pipeline"""
-        #pass the request to serializer to make it a python object
-        #serializer also catches errors of blank request objects
+        # pass the request to serializer to make it a python object
+        # serializer also catches errors of blank request objects
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         provider = serializer.data.get('provider', None)
-        strategy = load_strategy(request) #creates the app instance
+        strategy = load_strategy(request)  # creates the app instance
 
-        if request.user.is_anonymous: #make sure the user is not anonymous
-            user=None
+        if request.user.is_anonymous:  # make sure the user is not anonymous
+            user = None
         else:
-            user=request.user
-
+            user = request.user
 
         try:
-            #load backend with strategy and provider from settings(AUTHENTICATION_BACKENDS)
-            backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
+            # load backend with strategy and provider from settings(AUTHENTICATION_BACKENDS)
+            backend = load_backend(
+                strategy=strategy, name=provider, redirect_uri=None)
 
         except MissingBackend as error:
 
@@ -208,16 +213,16 @@ class SocialSignUp(CreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            #check type of oauth provide e.g facebook is BaseOAuth2 twitter is BaseOAuth1
+            # check type of oauth provide e.g facebook is BaseOAuth2 twitter is BaseOAuth1
             if isinstance(backend, BaseOAuth1):
-                #oath1 passes access token and secret
+                # oath1 passes access token and secret
                 access_token = {
-                        "oauth_token": serializer.data.get('access_token'),
-                        "oauth_token_secret": serializer.data.get('access_token_secret'),
-                        }
+                    "oauth_token": serializer.data.get('access_token'),
+                    "oauth_token_secret": serializer.data.get('access_token_secret'),
+                }
 
             elif isinstance(backend, BaseOAuth2):
-                #oauth2 only has access token
+                # oauth2 only has access token
                 access_token = serializer.data.get('access_token')
 
         except HTTPError as error:
@@ -229,40 +234,39 @@ class SocialSignUp(CreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         except AuthTokenError as error:
-             return Response({
-               "error":"invalid credentials",
-               "details": str(error)
+            return Response({
+                "error": "invalid credentials",
+                "details": str(error)
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
         try:
-            #authenticate the current user
-            #social pipeline associate by email handles already associated exception
+            # authenticate the current user
+            # social pipeline associate by email handles already associated exception
             authenticated_user = backend.do_auth(access_token, user=user)
 
         except HTTPError as error:
-            #catch any error as a result of the authentication
+            # catch any error as a result of the authentication
             return Response({
-                "error" : "invalid token",
-                "details":str(error)
-                },status=status.HTTP_400_BAD_REQUEST)
+                "error": "invalid token",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         except AuthForbidden as error:
             return Response({
-                "error" : "invalid token",
-                "details":str(error)
-                },status=status.HTTP_400_BAD_REQUEST)
+                "error": "invalid token",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if authenticated_user and authenticated_user.is_active:
-            #Check if the user you intend to authenticate is active
+            # Check if the user you intend to authenticate is active
 
             headers = self.get_success_headers(serializer.data)
-            response = {"email":authenticated_user.email,
-                        "username":authenticated_user.username,
-                        "token":authenticated_user.token}
+            response = {"email": authenticated_user.email,
+                        "username": authenticated_user.username,
+                        "token": authenticated_user.token}
 
-            return Response(response,status=status.HTTP_200_OK,
-                                headers=headers)
+            return Response(response, status=status.HTTP_200_OK,
+                            headers=headers)
         else:
             return Response({"errors": "Could not authenticate"},
                             status=status.HTTP_400_BAD_REQUEST)

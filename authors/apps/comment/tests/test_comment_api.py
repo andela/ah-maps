@@ -46,7 +46,7 @@ class CommentApiTest(TestCase):
     def test_update_module_api(self):
         response = self.client.post(self.create_url, self.body, format='json')
         self.update_url = reverse(self.namespace + ':update', kwargs={'pk': response.data.get('comment').get('id')})
-        
+
         response = self.client.put(self.update_url, self.body)
         self.assertEqual(200, response.status_code)
 
@@ -56,3 +56,24 @@ class CommentApiTest(TestCase):
 
         response = self.client.delete(self.delete_url)
         self.assertEqual(204, response.status_code)
+
+    def test_get_liked_values(self):
+        """Test the boolean values returned on liking."""
+        like = 'comment_like_api'
+        self.client.put(reverse(like + ':like', kwargs={'pk': self.comment.pk}))
+        response = self.client.get(self.list_url)
+        self.assertContains(response, 'liked')
+        self.assertContains(response, 'disliked')
+
+    def test_get_disliked_values(self):
+        """Test the boolean values returned on liking."""
+        like = 'comment_like_api'
+        self.client.put(reverse(like + ':dislike', kwargs={'pk': self.comment.pk}))
+        response = self.client.get(self.list_url)
+        self.assertContains(response, 'liked')
+
+    def test_get_comments_anonyous_user(self):
+        """Test get comments by anonymous user."""
+        unauthorized_client = APIClient()
+        response = unauthorized_client.get(self.list_url)
+        self.assertEqual(200, response.status_code)

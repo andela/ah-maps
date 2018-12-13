@@ -43,9 +43,11 @@ class ArticleSerializer(serializers.ModelSerializer):
     read_count = serializers.SerializerMethodField(read_only=True)
     tags = TagRelation(many=True, required=False)
     facebook = serializers.SerializerMethodField(read_only=True)
-    twitter= serializers.SerializerMethodField(read_only=True)
-    Linkedin= serializers.SerializerMethodField(read_only=True)
-    mail= serializers.SerializerMethodField(read_only=True)
+    twitter = serializers.SerializerMethodField(read_only=True)
+    Linkedin = serializers.SerializerMethodField(read_only=True)
+    mail = serializers.SerializerMethodField(read_only=True)
+    liked = serializers.SerializerMethodField(read_only=True)
+    disliked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         """Metadata description."""
@@ -57,13 +59,13 @@ class ArticleSerializer(serializers.ModelSerializer):
             'disliked_by', 'image_file', 'rating',
             'update_url', 'delete_url', 'reading_time', 'like_count',
             'dislike_count', 'my_highlights', 'read_count', 'tags',
-            'facebook', 'twitter', 'Linkedin', 'mail')
+            'facebook', 'twitter', 'Linkedin', 'mail', 'liked', 'disliked')
 
     def get_favorited(self, obj):
         """Get favourited."""
         user = self.context['request'].user
         return True if obj.is_favorited(user) > 0 else False
-               
+
     def get_favorites_count(self, obj):
         """Get favourited count."""
         return obj.is_favorited()
@@ -116,6 +118,28 @@ class ArticleSerializer(serializers.ModelSerializer):
         average = Rating.objects.filter(
             article__pk=obj.pk).aggregate(Avg('your_rating'))
         return average['your_rating__avg']
+
+    def get_liked(self, obj):
+        """Get if article has been liked."""
+        request = self.context.get('request')
+        if isinstance(request.user, AnonymousUser):
+            return None
+        try:
+            obj.liked_by.get(user=request.user)
+            return True
+        except Profile.DoesNotExist:
+            return False
+
+    def get_disliked(self, obj):
+        """Get if article has been liked."""
+        request = self.context.get('request')
+        if isinstance(request.user, AnonymousUser):
+            return None
+        try:
+            obj.disliked_by.get(user=request.user)
+            return True
+        except Profile.DoesNotExist:
+            return False
 
     def update(self, instance, validated_data):
         """Update article."""

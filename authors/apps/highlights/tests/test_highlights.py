@@ -30,6 +30,7 @@ class HighlightsApiTest(TestCase):
                           "highlight": "Text not in article body."}
         self.highlight_fake_article_url = reverse(
             self.namespace + ':create_highlight', kwargs={'slug': 'not-real-slug'})
+        self.list_url = reverse('article_api' + ':list')
 
     def test_create_highlight(self):
         """Test creating a highlight."""
@@ -49,7 +50,6 @@ class HighlightsApiTest(TestCase):
 
     def test_get_my_highlights(self):
         """Test get my highlights functionality."""
-        self.list_url = reverse('article_api' + ':list')
         res = self.client.get(self.list_url)
         self.assertContains(res, 'my_highlights')
 
@@ -72,3 +72,10 @@ class HighlightsApiTest(TestCase):
         """Test highlight non existing article."""
         res = self.client.post(self.highlight_fake_article_url, data=self.data)
         self.assertEqual(400, res.status_code)
+
+    def test_unauthorized_user(self):
+        """Test get unauthorized users highlights."""
+        unauthorized_client = APIClient()
+        response = unauthorized_client.get(self.list_url)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, '[]')
