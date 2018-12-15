@@ -38,7 +38,9 @@ ALLOWED_HOSTS = [
     'ah-map-staging.herokuapp.com',
     'ah-maps-frontend-staging.herokuapp.com',
     'test-twitter-api-mirrow.herokuapp.com',
+    '127.0.0.1:3000',
     '127.0.0.1',
+    'localhost:3000',
     'localhost',
 ]
 
@@ -191,6 +193,7 @@ CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:4000',
     'localhost:4000',
     'localhost:3000',
+    '127.0.0.1:3000',
 )
 
 CORS_ORIGIN_ALLOW_ALL = True

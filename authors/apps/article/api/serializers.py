@@ -1,6 +1,7 @@
 """Profile app serializers."""
 
 from rest_framework import serializers
+from django.utils.formats import localize
 from django.apps import apps
 from django.db.models import Avg
 from django.contrib.auth.models import AnonymousUser
@@ -43,9 +44,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     read_count = serializers.SerializerMethodField(read_only=True)
     tags = TagRelation(many=True, required=False)
     facebook = serializers.SerializerMethodField(read_only=True)
-    twitter = serializers.SerializerMethodField(read_only=True)
-    Linkedin = serializers.SerializerMethodField(read_only=True)
-    mail = serializers.SerializerMethodField(read_only=True)
+    twitter= serializers.SerializerMethodField(read_only=True)
+    Linkedin= serializers.SerializerMethodField(read_only=True)
+    mail= serializers.SerializerMethodField(read_only=True)
+    date = serializers.SerializerMethodField()
     liked = serializers.SerializerMethodField(read_only=True)
     disliked = serializers.SerializerMethodField(read_only=True)
 
@@ -55,7 +57,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = TABLE
         fields = fields + (
             'author', 'favorited',
-            'favorites_count', 'liked_by',
+            'favorites_count', 'liked_by', 'date',
             'disliked_by', 'image_file', 'rating',
             'update_url', 'delete_url', 'reading_time', 'like_count',
             'dislike_count', 'my_highlights', 'read_count', 'tags',
@@ -118,6 +120,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         average = Rating.objects.filter(
             article__pk=obj.pk).aggregate(Avg('your_rating'))
         return average['your_rating__avg']
+    def get_date(self, obj):
+        return localize(obj.created_at)
 
     def get_liked(self, obj):
         """Get if article has been liked."""
@@ -185,6 +189,11 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         image = None
         request = self.context.get('request')
+        if validated_data.get('image_file'):
+            image = uploader(validated_data.get('image_file'))
+            image = image.get('secure_url')
+            del validated_data['image_file']
+
         if validated_data.get('tags'):
 
             tags = validated_data.get('tags')
@@ -203,10 +212,6 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
         validated_data['tags'] = instance.tags
         validated_data['slug'] = instance.slug
-        if validated_data.get('image_file'):
-            image = uploader(validated_data.get('image_file'))
-            image = image.get('secure_url')
-            del validated_data['image_file']
 
         validated_data.pop('tags')
         instance = TABLE.objects.create(**validated_data)

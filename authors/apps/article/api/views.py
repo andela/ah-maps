@@ -98,7 +98,7 @@ class ArticleCreateAPIView(CreateAPIView):
 class ArticleDetailAPIView(RetrieveAPIView):
     """Check article details."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = TABLE.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = LOOKUP_FIELD
