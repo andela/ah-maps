@@ -214,7 +214,6 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
         validated_data['slug'] = instance.slug
 
         validated_data.pop('tags')
-        instance = TABLE.objects.create(**validated_data)
         for profile in request.user.profile.followers.all():
             notify_followed_user_posts_article(
                 article=instance, follower=profile, request=request)
