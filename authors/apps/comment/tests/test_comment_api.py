@@ -61,7 +61,7 @@ class CommentApiTest(TestCase):
         """Test the boolean values returned on liking."""
         like = 'comment_like_api'
         self.client.put(reverse(like + ':like', kwargs={'pk': self.comment.pk}))
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.update_url)
         self.assertContains(response, 'liked')
         self.assertContains(response, 'disliked')
 
@@ -69,7 +69,7 @@ class CommentApiTest(TestCase):
         """Test the boolean values returned on liking."""
         like = 'comment_like_api'
         self.client.put(reverse(like + ':dislike', kwargs={'pk': self.comment.pk}))
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.update_url)
         self.assertContains(response, 'liked')
 
     def test_get_comments_anonyous_user(self):

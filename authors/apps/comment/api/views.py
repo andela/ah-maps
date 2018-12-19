@@ -24,7 +24,7 @@ class CommentListAPIView(ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         """get all comment"""
-        queryset_list = TABLE.objects.all()
+        queryset_list = TABLE.objects.filter(article__slug=self.kwargs['slug'], parent__isnull=True)
 
         query = self.request.GET.get('q')
 
